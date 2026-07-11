@@ -14,13 +14,13 @@
 
   <header class="site-header" id="site-header">
     <nav class="nav shell" aria-label="主要導覽">
-      <a class="brand" href="#home" aria-label="回到首頁">J <span>＆</span> H</a>
+      <a class="brand" href="#home" aria-label="子靖與勤萱，回到首頁">子靖 <span>＆</span> 勤萱</a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="開啟選單">
         <span></span><span></span>
       </button>
       <div class="nav-links" id="nav-links">
         <a href="#wedding-info">婚宴資訊</a>
-        <a href="#venue">婚宴地點</a>
+        <a href="#venue">交通</a>
         <a href="#parking">停車資訊</a>
         <a href="#seating">座位查詢</a>
         <a href="#gallery">婚紗相簿</a>
@@ -46,56 +46,78 @@
     </section>
 
     <section class="page-section" id="wedding-info">
-      <div class="shell reveal">
-        <header class="section-title">
-          <p>01 · WEDDING</p>
+      <div class="shell wedding-info-wrap">
+        <header class="section-title reveal">
+          <p>WEDDING INFORMATION</p>
           <h2>婚宴資訊</h2>
-          <span>在最美好的日子，期待與您相聚。</span>
+          <span class="couple-name">子靖 <i>＆</i> 勤萱</span>
         </header>
-        <div class="glass-card info-card">
-          <div class="date-block">
-            <p>DEC</p>
-            <strong>26</strong>
-            <span>2026 · 星期六</span>
-          </div>
-          <div class="info-divider" aria-hidden="true"></div>
-          <div class="schedule">
-            <div>
-              <time datetime="2026-12-26T17:00">17:00</time>
-              <p>開放入場</p>
-            </div>
-            <div>
-              <time datetime="2026-12-26T18:00">18:00</time>
-              <p>宴席開始</p>
-            </div>
-          </div>
-          <div class="info-divider" aria-hidden="true"></div>
-          <div class="info-place">
-            <p>晶宴會館</p>
-            <strong>御豐館</strong>
-            <span>2 樓</span>
-          </div>
+
+        <div class="wedding-facts">
+          <article class="glass-card fact-card reveal">
+            <span class="line-icon calendar-icon" aria-hidden="true"></span>
+            <p>婚宴日期</p>
+            <strong>2026 年 12 月 26 日（六）</strong>
+            <span>Saturday</span>
+          </article>
+          <article class="glass-card fact-card reveal fact-delay-1">
+            <span class="line-icon clock-icon" aria-hidden="true"></span>
+            <p>開放入場</p>
+            <time datetime="2026-12-26T17:00">17:00</time>
+            <span>Welcome</span>
+          </article>
+          <article class="glass-card fact-card reveal fact-delay-2">
+            <span class="line-icon clock-icon" aria-hidden="true"></span>
+            <p>宴席開始</p>
+            <time datetime="2026-12-26T18:00">18:00</time>
+            <span>Dinner</span>
+          </article>
         </div>
+
+        <article class="glass-card wedding-venue-card reveal">
+          <div class="venue-line-mark" aria-hidden="true"><span></span></div>
+          <div class="wedding-venue-copy">
+            <p>WEDDING VENUE</p>
+            <h3>晶宴會館－御豐館</h3>
+            <strong>2F｜星辰劇場</strong>
+            <address>300 新竹市東區公道五路三段 1 號 2 樓</address>
+          </div>
+        </article>
       </div>
     </section>
 
     <section class="page-section soft-blue" id="venue">
       <div class="shell reveal">
         <header class="section-title">
-          <p>02 · VENUE</p>
-          <h2>婚宴地點</h2>
+          <p>02 · GETTING THERE</p>
+          <h2>交通與抵達</h2>
         </header>
-        <div class="glass-card venue-card">
-          <div class="venue-copy">
-            <p class="label">THE ADDRESS</p>
-            <h3>晶宴會館－御豐館</h3>
-            <address>300 新竹市東區<br>公道五路三段 1 號 2 樓</address>
-            <a class="button" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%99%B6%E5%AE%B4%E6%9C%83%E9%A4%A8%E5%BE%A1%E8%B1%90%E9%A4%A8" target="_blank" rel="noopener noreferrer">開啟地圖導航 <span aria-hidden="true">↗</span></a>
-          </div>
-          <div class="venue-symbol" aria-hidden="true">
-            <span>J</span><i>＆</i><span>H</span>
-            <small>HSINCHU</small>
-          </div>
+
+        <div class="arrival-guides">
+          <article class="glass-card arrival-guide reveal">
+            <div class="guide-image">
+              <img src="assets/venue-exterior.jpg" alt="晶宴會館御豐館外觀" loading="lazy">
+            </div>
+            <div class="guide-copy">
+              <p>VENUE EXTERIOR</p>
+              <h3>認明晶宴會館－御豐館</h3>
+              <div class="gold-line" aria-hidden="true"></div>
+              <p class="guide-description">第一次前往的賓客，請認明晶宴會館－御豐館外觀。<br>建議提前 20～30 分鐘抵達，預留停車、報到與入座時間。</p>
+              <a class="button" href="https://www.google.com/maps/search/?api=1&amp;query=晶宴會館御豐館" target="_blank" rel="noopener noreferrer">開啟會館導航</a>
+            </div>
+          </article>
+
+          <article class="glass-card arrival-guide reverse reveal">
+            <div class="guide-copy">
+              <p>UPON ARRIVAL</p>
+              <h3>前往 2F 星辰劇場</h3>
+              <div class="gold-line" aria-hidden="true"></div>
+              <p class="guide-description">抵達會館後，請依現場指示搭乘電梯前往 2 樓。<br>婚宴場地為星辰劇場。</p>
+            </div>
+            <div class="guide-image">
+              <img src="assets/venue-entrance.jpg" alt="晶宴會館入口與電梯指引區域" loading="lazy">
+            </div>
+          </article>
         </div>
       </div>
     </section>

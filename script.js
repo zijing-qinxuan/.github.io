@@ -1,4 +1,5 @@
 const header = document.querySelector('#site-header');
+const hero = document.querySelector('#home');
 const menuButton = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('#nav-links');
 
@@ -24,10 +25,12 @@ document.addEventListener('keydown', (event) => {
 
 window.addEventListener('resize', () => {
   if (window.innerWidth > 820) setMenu(false);
+  updateHeader();
 });
 
 function updateHeader() {
-  header.classList.toggle('scrolled', window.scrollY > 24);
+  const heroBottom = hero.offsetTop + hero.offsetHeight - header.offsetHeight;
+  header.classList.toggle('scrolled', window.scrollY >= heroBottom);
 }
 
 updateHeader();
