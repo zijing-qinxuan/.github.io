@@ -142,9 +142,9 @@
               <fieldset class="rsvp-question" data-rsvp-question="ceremony">
                 <legend>是否參加婚禮？</legend>
                 <div class="rsvp-options">
-                  <label><input type="radio" name="ceremony" value="可以參加"><span>可以參加</span></label>
+                  <label><input type="radio" name="ceremony" value="現場參加"><span>現場參加</span></label>
+                  <label><input type="radio" name="ceremony" value="線上參加"><span>線上參加</span></label>
                   <label><input type="radio" name="ceremony" value="無法參加"><span>無法參加</span></label>
-                  <label><input type="radio" name="ceremony" value="尚未確定"><span>尚未確定</span></label>
                 </div>
                 <p class="rsvp-error" data-rsvp-error="ceremony" aria-live="polite"></p>
               </fieldset>
@@ -208,8 +208,11 @@
             <div class="rsvp-success" id="rsvp-success" role="status" hidden>
               <div class="rsvp-success-mark" aria-hidden="true"><span></span></div>
               <h3 id="rsvp-success-title">謝謝您的回覆</h3>
-              <p>我們已收到您的出席資訊。<br>期待與您一起分享這個重要的日子。</p>
-              <button class="button rsvp-edit" id="rsvp-edit" type="button">修改回覆</button>
+              <p id="rsvp-success-message">我們已收到您的出席資訊。<br>期待與您一起分享這個重要的日子。</p>
+              <div class="rsvp-success-actions">
+                <a class="button rsvp-online-link" id="rsvp-online-link" target="_blank" rel="noopener noreferrer" hidden>進入線上婚禮</a>
+                <button class="button rsvp-edit" id="rsvp-edit" type="button">修改回覆</button>
+              </div>
             </div>
           </div>
         </article>
@@ -348,7 +351,7 @@
             </div>
             <div class="guide-copy">
               <p>VENUE EXTERIOR</p>
-              <h3>認明晶宴會館－御豐館</h3>
+              <h3>晶宴會館－御豐館</h3>
               <div class="gold-line" aria-hidden="true"></div>
               <p class="guide-description">第一次前往的賓客，請認明晶宴會館－御豐館外觀。<br>建議提前 20～30 分鐘抵達，預留停車、報到與入座時間。</p>
               <a class="button" href="https://www.google.com/maps/search/?api=1&amp;query=晶宴會館御豐館" target="_blank" rel="noopener noreferrer">開啟會館導航</a>

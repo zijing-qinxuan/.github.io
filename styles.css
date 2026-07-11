@@ -187,6 +187,8 @@ body.invite-missing .invite-gate { display: grid; }
 .rsvp-success-mark span { width: 16px; height: 8px; border-left: 1px solid var(--gold); border-bottom: 1px solid var(--gold); transform: translateY(-2px) rotate(-45deg); }
 .rsvp-success h3 { margin-bottom: 12px; }
 .rsvp-success p { margin: 0 0 27px; color: var(--navy-muted); line-height: 1.9; }
+.rsvp-success-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.rsvp-online-link { justify-content: center; }
 .rsvp-edit { min-width: 140px; justify-content: center; border: 0; cursor: pointer; }
 @keyframes rsvp-success-in { from { opacity: 0; transform: translateY(18px); } }
 
@@ -490,7 +492,7 @@ footer small { color: rgba(255,255,255,.5); letter-spacing: .12em; }
   .page-section { padding: var(--section-spacing) 0; }
   .rsvp-card { padding: var(--card-padding-large); }
   .rsvp-heading > p:last-child br { display: none; }
-  .rsvp-toggle, .rsvp-submit, .rsvp-edit { width: 100%; }
+  .rsvp-toggle, .rsvp-submit, .rsvp-edit, .rsvp-online-link { width: 100%; }
   .rsvp-form-grid, .rsvp-options, .rsvp-counts { grid-template-columns: 1fr; }
   .rsvp-field input, .rsvp-field textarea { font-size: 16px; }
   .rsvp-counter { padding: 17px; }
