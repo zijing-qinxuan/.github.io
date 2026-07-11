@@ -48,21 +48,21 @@
         <span></span><span></span>
       </button>
       <div class="nav-links" id="nav-links">
-        <a href="#ceremony-info" data-invite-visible="wedding full online">婚禮資訊</a>
-        <a href="#wedding-info" data-invite-visible="full">婚宴資訊</a>
-        <a href="#venue" data-invite-visible="full">交通</a>
-        <a href="#parking" data-invite-visible="full">停車資訊</a>
-        <a href="#seating" data-invite-visible="full">座位查詢</a>
-        <a href="#gallery">婚紗相簿</a>
-        <a href="#share" data-invite-visible="wedding full">照片分享</a>
-        <a href="#messages">祝福</a>
-        <a href="#faq" data-invite-visible="wedding">常見問題</a>
+        <a href="#ceremony-info" data-invite="nav:ceremony-info">婚禮資訊</a>
+        <a href="#wedding-info" data-invite="nav:wedding-info">婚宴資訊</a>
+        <a href="#venue" data-invite="nav:venue">交通</a>
+        <a href="#parking" data-invite="nav:parking">停車資訊</a>
+        <a href="#seating" data-invite="nav:seating">座位查詢</a>
+        <a href="#gallery" data-invite="nav:gallery">婚紗相簿</a>
+        <a href="#share" data-invite="nav:share">照片分享</a>
+        <a href="#messages" data-invite="nav:messages">祝福</a>
+        <a href="#faq" data-invite="nav:faq">常見問題</a>
       </div>
     </nav>
   </header>
 
   <main>
-    <section class="hero" id="home" aria-label="子靖與勤萱婚宴邀請">
+    <section class="hero" id="home" aria-label="子靖與勤萱婚宴邀請" data-invite="section:hero">
       <div class="hero-media" aria-hidden="true">
         <img class="hero-image" src="assets/hero.jpg" alt="" fetchpriority="high">
       </div>
@@ -81,7 +81,7 @@
       </a>
     </section>
 
-    <section class="page-section ceremony-section" id="ceremony-info">
+    <section class="page-section ceremony-section" id="ceremony-info" data-invite="section:ceremony-info">
       <div class="shell wedding-info-wrap">
         <header class="section-title reveal">
           <p>WEDDING CEREMONY</p>
@@ -109,7 +109,7 @@
           </article>
         </div>
 
-        <article class="glass-card wedding-venue-card ceremony-venue-card reveal" data-invite-visible="wedding full">
+        <article class="glass-card wedding-venue-card ceremony-venue-card reveal" data-invite="content:ceremony-venue">
           <div class="venue-line-mark" aria-hidden="true"><span></span></div>
           <div class="wedding-venue-copy">
             <p>CEREMONY VENUE</p>
@@ -120,7 +120,7 @@
           <a class="button" href="https://maps.app.goo.gl/ANNKAeLfyfp5PV898" target="_blank" rel="noopener noreferrer">開啟婚禮場地導航</a>
         </article>
 
-        <article class="glass-card online-attendance-card reveal" data-invite-visible="online">
+        <article class="glass-card online-attendance-card reveal" data-invite="content:online-attendance">
           <div class="online-status-mark" aria-hidden="true"><span></span></div>
           <div class="online-attendance-copy">
             <p>ONLINE CEREMONY</p>
@@ -132,7 +132,7 @@
       </div>
     </section>
 
-    <section class="ceremony-notes page-section soft-blue" id="ceremony-notes" data-invite-visible="wedding full">
+    <section class="ceremony-notes page-section soft-blue" id="ceremony-notes" data-invite="section:ceremony-notes">
       <div class="shell reveal">
         <header class="section-title">
           <p>BEFORE YOU ARRIVE</p>
@@ -158,7 +158,7 @@
       </div>
     </section>
 
-    <section class="page-section" id="wedding-info" data-invite-visible="full">
+    <section class="page-section" id="wedding-info" data-invite="section:wedding-info">
       <div class="shell wedding-info-wrap">
         <header class="section-title reveal">
           <p>WEDDING INFORMATION</p>
@@ -199,7 +199,7 @@
       </div>
     </section>
 
-    <section class="page-section soft-blue" id="venue" data-invite-visible="full">
+    <section class="page-section soft-blue" id="venue" data-invite="section:venue">
       <div class="shell reveal">
         <header class="section-title">
           <p>02 · GETTING THERE</p>
@@ -235,7 +235,7 @@
       </div>
     </section>
 
-    <section class="page-section" id="parking" data-invite-visible="full">
+    <section class="page-section" id="parking" data-invite="section:parking">
       <div class="shell reveal">
         <header class="section-title">
           <p>03 · PARKING</p>
@@ -270,7 +270,7 @@
       </div>
     </section>
 
-    <section class="page-section soft-gold" id="seating" data-invite-visible="full">
+    <section class="page-section soft-gold" id="seating" data-invite="section:seating">
       <div class="shell seat-lookup-shell">
         <header class="section-title seat-title reveal">
           <p>SEAT LOOKUP</p>
@@ -299,7 +299,7 @@
       </div>
     </section>
 
-    <section class="story-gallery" id="gallery">
+    <section class="story-gallery" id="gallery" data-invite="section:gallery">
       <header class="section-title story-title shell reveal">
         <p>05 · GALLERY</p>
         <h2>OUR STORY</h2>
@@ -358,7 +358,7 @@
       </div>
     </section>
 
-    <section class="page-section soft-blue" id="share" data-invite-visible="wedding full">
+    <section class="page-section soft-blue" id="share" data-invite="section:share">
       <div class="shell share-shell">
         <article class="glass-card share-card reveal">
           <div class="share-mark" aria-hidden="true"><span></span></div>
@@ -389,7 +389,7 @@
       </div>
     </section>
 
-    <section class="page-section messages-section" id="messages">
+    <section class="page-section messages-section" id="messages" data-invite="section:messages">
       <div class="shell messages-shell">
         <article class="glass-card messages-card reveal">
           <div class="message-ornament" aria-hidden="true"><span></span><i></i><span></span></div>
@@ -403,7 +403,7 @@
       </div>
     </section>
 
-    <section class="page-section faq-section" id="faq" data-invite-visible="wedding full">
+    <section class="page-section faq-section" id="faq" data-invite="section:faq">
       <div class="shell faq-shell">
         <header class="section-title reveal">
           <p>QUESTIONS & ANSWERS</p>
@@ -418,11 +418,11 @@
             <summary>婚禮場地位於哪裡？<span aria-hidden="true"></span></summary>
             <p>婚禮位於耶和華見證人王國聚會所－竹東會眾，會場在 2 樓。</p>
           </details>
-          <details data-invite-visible="full">
+          <details data-invite="content:banquet-faq">
             <summary>婚宴幾點開始？<span aria-hidden="true"></span></summary>
             <p>17:00 開放入場，宴席將於 18:00 正式開始。</p>
           </details>
-          <details data-invite-visible="full">
+          <details data-invite="content:banquet-faq">
             <summary>婚宴停車如何辦理消磁？<span aria-hidden="true"></span></summary>
             <p>地下停車場由服務人員至桌邊協助；戶外停車場請於離場前至櫃檯報車號。</p>
           </details>

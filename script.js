@@ -1,4 +1,32 @@
 const ONLINE_MEETING_URL = "";
+const VALID_INVITE_MODES = ["wedding", "full", "online"];
+
+const INVITE_CONFIG = {
+  wedding: {
+    heroText: ["婚禮｜14:00"],
+    sections: ["hero", "ceremony-info", "ceremony-notes", "gallery", "share", "messages", "faq"],
+    navigation: ["ceremony-info", "gallery", "share", "messages", "faq"],
+    hiddenSections: ["wedding-info", "venue", "parking", "seating"],
+    content: ["ceremony-venue"],
+    ceremonyEntryLabel: "開放入場"
+  },
+  full: {
+    heroText: ["婚禮｜14:00", "婚宴｜18:00"],
+    sections: ["hero", "ceremony-info", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "gallery", "share", "messages", "faq"],
+    navigation: ["ceremony-info", "wedding-info", "venue", "parking", "seating", "gallery", "share", "messages"],
+    hiddenSections: [],
+    content: ["ceremony-venue", "banquet-faq"],
+    ceremonyEntryLabel: "開放入場"
+  },
+  online: {
+    heroText: ["婚禮｜14:00"],
+    sections: ["hero", "ceremony-info", "gallery", "messages"],
+    navigation: ["ceremony-info", "gallery", "messages"],
+    hiddenSections: ["ceremony-notes", "wedding-info", "venue", "parking", "seating", "share", "faq"],
+    content: ["online-attendance"],
+    ceremonyEntryLabel: "線上開放進入"
+  }
+};
 
 const header = document.querySelector('#site-header');
 const hero = document.querySelector('#home');
@@ -6,7 +34,6 @@ const heroMedia = document.querySelector('.hero-media');
 const menuButton = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('#nav-links');
 const inviteMode = new URLSearchParams(window.location.search).get('invite');
-const validInviteModes = ['wedding', 'full', 'online'];
 const heroSchedule = document.querySelector('#hero-schedule');
 const weddingCountdown = document.querySelector('#wedding-countdown');
 const scrollProgress = document.querySelector('#scroll-progress');
@@ -17,25 +44,30 @@ const landingDialog = document.querySelector('#landing-dialog');
 const dialogCloseButton = document.querySelector('#dialog-close-button');
 const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-if (validInviteModes.includes(inviteMode)) {
-  document.body.dataset.inviteMode = inviteMode;
-  document.querySelectorAll('[data-invite-visible]').forEach((element) => {
-    element.hidden = !element.dataset.inviteVisible.split(' ').includes(inviteMode);
+if (VALID_INVITE_MODES.includes(inviteMode)) {
+  const config = INVITE_CONFIG[inviteMode];
+
+  document.querySelectorAll('[data-invite^="section:"]').forEach((element) => {
+    const key = element.dataset.invite.replace('section:', '');
+    element.hidden = config.hiddenSections.includes(key) || !config.sections.includes(key);
   });
 
-  const ceremonyTime = document.createElement('span');
-  ceremonyTime.textContent = '婚禮｜14:00';
-  heroSchedule.append(ceremonyTime);
+  document.querySelectorAll('[data-invite^="nav:"]').forEach((element) => {
+    const key = element.dataset.invite.replace('nav:', '');
+    element.hidden = !config.navigation.includes(key);
+  });
 
-  if (inviteMode === 'online') {
-    ceremonyEntryLabel.textContent = '線上開放進入';
-  }
+  document.querySelectorAll('[data-invite^="content:"]').forEach((element) => {
+    const key = element.dataset.invite.replace('content:', '');
+    element.hidden = !config.content.includes(key);
+  });
 
-  if (inviteMode === 'full') {
-    const banquetTime = document.createElement('span');
-    banquetTime.textContent = '婚宴｜18:00';
-    heroSchedule.append(banquetTime);
-  }
+  ceremonyEntryLabel.textContent = config.ceremonyEntryLabel;
+  config.heroText.forEach((text) => {
+    const line = document.createElement('span');
+    line.textContent = text;
+    heroSchedule.append(line);
+  });
 } else {
   document.body.classList.add('invite-missing');
 }
