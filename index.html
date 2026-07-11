@@ -9,8 +9,37 @@
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
-<body>
-  <a class="skip-link" href="#wedding-info">跳至婚宴資訊</a>
+<body class="invite-pending">
+  <div class="invite-gate" id="invite-gate" role="status">
+    <img class="landing-image" src="assets/hero.jpg" alt="子靖與勤萱的婚紗照" fetchpriority="high">
+    <div class="landing-overlay" aria-hidden="true"></div>
+    <span class="landing-brand" aria-label="子靖與勤萱">子靖 <span>＆</span> 勤萱</span>
+
+    <div class="landing-content">
+      <h1>子靖 <span>＆</span> 勤萱</h1>
+      <p class="landing-kicker">Wedding Invitation</p>
+      <p class="landing-date">2026 ・ 12 ・ 26</p>
+      <div class="landing-line" aria-hidden="true"></div>
+      <div class="landing-message">
+        <p>謝謝您接受我們的邀請</p>
+        <p>請使用邀請訊息中的專屬連結<br>查看本次婚禮資訊。</p>
+        <p lang="en">We look forward to celebrating with you.</p>
+      </div>
+      <button class="landing-help-button" id="landing-help-button" type="button">我已有邀請連結</button>
+    </div>
+
+    <div class="landing-dialog" id="landing-dialog" role="dialog" aria-modal="true" aria-labelledby="landing-dialog-title" hidden>
+      <div class="landing-dialog-card">
+        <div class="dialog-mark" aria-hidden="true"><span></span></div>
+        <h2 id="landing-dialog-title">開啟專屬邀請</h2>
+        <p>請由 LINE 或邀請訊息中的專屬網址開啟本網站。</p>
+        <button class="dialog-close-button" id="dialog-close-button" type="button">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+  <a class="skip-link" href="#ceremony-info">跳至婚禮資訊</a>
 
   <header class="site-header" id="site-header">
     <nav class="nav shell" aria-label="主要導覽">
@@ -19,33 +48,117 @@
         <span></span><span></span>
       </button>
       <div class="nav-links" id="nav-links">
-        <a href="#wedding-info">婚宴資訊</a>
-        <a href="#venue">交通</a>
-        <a href="#parking">停車資訊</a>
-        <a href="#seating">座位查詢</a>
+        <a href="#ceremony-info" data-invite-visible="wedding full online">婚禮資訊</a>
+        <a href="#wedding-info" data-invite-visible="full">婚宴資訊</a>
+        <a href="#venue" data-invite-visible="full">交通</a>
+        <a href="#parking" data-invite-visible="full">停車資訊</a>
+        <a href="#seating" data-invite-visible="full">座位查詢</a>
         <a href="#gallery">婚紗相簿</a>
-        <a href="#share">照片分享</a>
+        <a href="#share" data-invite-visible="wedding full">照片分享</a>
+        <a href="#messages">祝福</a>
+        <a href="#faq" data-invite-visible="wedding">常見問題</a>
       </div>
     </nav>
   </header>
 
   <main>
     <section class="hero" id="home" aria-label="子靖與勤萱婚宴邀請">
-      <img class="hero-image" src="assets/hero.jpg" alt="子靖與勤萱的婚紗照">
+      <div class="hero-media" aria-hidden="true">
+        <img class="hero-image" src="assets/hero.jpg" alt="" fetchpriority="high">
+      </div>
       <div class="hero-overlay" aria-hidden="true"></div>
       <div class="hero-content">
         <p class="hero-kicker">WE'RE GETTING MARRIED</p>
         <h1>子靖 <span>＆</span> 勤萱</h1>
         <p class="hero-date">2026.12.26</p>
+        <p class="wedding-countdown" id="wedding-countdown" aria-live="polite"></p>
+        <div class="hero-schedule" id="hero-schedule" aria-label="邀請行程"></div>
         <p class="hero-invitation">誠摯邀請您</p>
       </div>
-      <a class="scroll-cue" href="#wedding-info">
+      <a class="scroll-cue" href="#ceremony-info">
         <span>往下滑</span>
         <i aria-hidden="true"></i>
       </a>
     </section>
 
-    <section class="page-section" id="wedding-info">
+    <section class="page-section ceremony-section" id="ceremony-info">
+      <div class="shell wedding-info-wrap">
+        <header class="section-title reveal">
+          <p>WEDDING CEREMONY</p>
+          <h2>婚禮資訊</h2>
+        </header>
+
+        <div class="wedding-facts">
+          <article class="glass-card fact-card reveal">
+            <span class="line-icon calendar-icon" aria-hidden="true"></span>
+            <p>婚禮日期</p>
+            <strong>2026 年 12 月 26 日（六）</strong>
+            <span>Saturday</span>
+          </article>
+          <article class="glass-card fact-card reveal fact-delay-1">
+            <span class="line-icon clock-icon" aria-hidden="true"></span>
+            <p id="ceremony-entry-label">開放入場</p>
+            <time datetime="2026-12-26T13:30">13:30</time>
+            <span>Welcome</span>
+          </article>
+          <article class="glass-card fact-card reveal fact-delay-2">
+            <span class="line-icon clock-icon" aria-hidden="true"></span>
+            <p>婚禮開始</p>
+            <time datetime="2026-12-26T14:00">14:00</time>
+            <span>Ceremony</span>
+          </article>
+        </div>
+
+        <article class="glass-card wedding-venue-card ceremony-venue-card reveal" data-invite-visible="wedding full">
+          <div class="venue-line-mark" aria-hidden="true"><span></span></div>
+          <div class="wedding-venue-copy">
+            <p>CEREMONY VENUE</p>
+            <h3>耶和華見證人王國聚會所</h3>
+            <strong>竹東會眾</strong>
+            <address>新竹縣竹東鎮<br>長春路三段 376 號 2 樓</address>
+          </div>
+          <a class="button" href="https://maps.app.goo.gl/ANNKAeLfyfp5PV898" target="_blank" rel="noopener noreferrer">開啟婚禮場地導航</a>
+        </article>
+
+        <article class="glass-card online-attendance-card reveal" data-invite-visible="online">
+          <div class="online-status-mark" aria-hidden="true"><span></span></div>
+          <div class="online-attendance-copy">
+            <p>ONLINE CEREMONY</p>
+            <h3>線上參加婚禮</h3>
+            <span>正式連結將透過原邀請訊息提供，請於婚禮前再次查看。</span>
+          </div>
+          <a class="button online-meeting-button is-unavailable" role="button" aria-disabled="true">線上參加連結將於婚禮前提供</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="ceremony-notes page-section soft-blue" id="ceremony-notes" data-invite-visible="wedding full">
+      <div class="shell reveal">
+        <header class="section-title">
+          <p>BEFORE YOU ARRIVE</p>
+          <h2>婚禮注意事項</h2>
+        </header>
+        <div class="ceremony-note-grid">
+          <article class="glass-card ceremony-note">
+            <span>01</span>
+            <h3>預留抵達時間</h3>
+            <p>婚禮將於 14:00 開始，建議預留交通與入場時間。</p>
+          </article>
+          <article class="glass-card ceremony-note">
+            <span>02</span>
+            <h3>依現場引導入場</h3>
+            <p>抵達聚會所後，請依現場接待人員指引前往 2 樓。</p>
+          </article>
+          <article class="glass-card ceremony-note">
+            <span>03</span>
+            <h3>準時入席</h3>
+            <p>13:30 開放入場，期待與您一同見證這個重要時刻。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section" id="wedding-info" data-invite-visible="full">
       <div class="shell wedding-info-wrap">
         <header class="section-title reveal">
           <p>WEDDING INFORMATION</p>
@@ -86,7 +199,7 @@
       </div>
     </section>
 
-    <section class="page-section soft-blue" id="venue">
+    <section class="page-section soft-blue" id="venue" data-invite-visible="full">
       <div class="shell reveal">
         <header class="section-title">
           <p>02 · GETTING THERE</p>
@@ -95,7 +208,7 @@
 
         <div class="arrival-guides">
           <article class="glass-card arrival-guide reveal">
-            <div class="guide-image">
+            <div class="guide-image image-shell">
               <img src="assets/venue-exterior.jpg" alt="晶宴會館御豐館外觀" loading="lazy">
             </div>
             <div class="guide-copy">
@@ -114,7 +227,7 @@
               <div class="gold-line" aria-hidden="true"></div>
               <p class="guide-description">抵達會館後，請依現場指示搭乘電梯前往 2 樓。<br>婚宴場地為星辰劇場。</p>
             </div>
-            <div class="guide-image">
+            <div class="guide-image image-shell">
               <img src="assets/venue-entrance.jpg" alt="晶宴會館入口與電梯指引區域" loading="lazy">
             </div>
           </article>
@@ -122,7 +235,7 @@
       </div>
     </section>
 
-    <section class="page-section" id="parking">
+    <section class="page-section" id="parking" data-invite-visible="full">
       <div class="shell reveal">
         <header class="section-title">
           <p>03 · PARKING</p>
@@ -131,83 +244,202 @@
         </header>
         <div class="parking-grid">
           <article class="glass-card parking-card reveal">
-            <img src="assets/parking-indoor.jpg" alt="晶宴會館地下停車場入口" loading="lazy">
+            <div class="parking-image image-shell">
+              <img src="assets/parking-indoor.jpg" alt="晶宴會館地下停車場入口" loading="lazy">
+            </div>
             <div class="parking-copy">
               <p class="label">INDOOR PARKING</p>
+              <span class="parking-badge">推薦</span>
               <h3>地下停車場</h3>
-              <p>服務人員會到桌邊協助辦理停車消磁。</p>
-              <a class="text-link" href="https://maps.app.goo.gl/syt4XhgH2ppqW18v9" target="_blank" rel="noopener noreferrer">導航至地下停車場 <span aria-hidden="true">↗</span></a>
+              <p>建議優先停放地下停車場，可直接搭乘電梯前往 2 樓星辰劇場。<br><br>婚宴期間服務人員會到桌邊協助辦理停車消磁，無需自行處理。</p>
+              <a class="text-link" href="https://maps.app.goo.gl/syt4XhgH2ppqW18v9" target="_blank" rel="noopener noreferrer">開啟導航 <span aria-hidden="true">↗</span></a>
             </div>
           </article>
           <article class="glass-card parking-card reveal delay">
-            <img src="assets/parking-outdoor.jpg" alt="晶宴會館戶外平面停車場" loading="lazy">
+            <div class="parking-image image-shell">
+              <img src="assets/parking-outdoor.jpg" alt="晶宴會館戶外平面停車場" loading="lazy">
+            </div>
             <div class="parking-copy">
               <p class="label">OUTDOOR PARKING</p>
               <h3>戶外平面停車場</h3>
-              <p>離開前請至櫃檯報車號，辦理停車消磁。</p>
-              <a class="text-link" href="https://maps.app.goo.gl/YsNmcXz2q3yABRh56" target="_blank" rel="noopener noreferrer">導航至戶外停車場 <span aria-hidden="true">↗</span></a>
+              <p>車位較多，步行約 2～3 分鐘即可抵達會館。<br><br>離場前請至櫃檯報車號，由工作人員協助辦理停車消磁。</p>
+              <a class="text-link" href="https://maps.app.goo.gl/YsNmcXz2q3yABRh56" target="_blank" rel="noopener noreferrer">開啟導航 <span aria-hidden="true">↗</span></a>
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="page-section soft-gold" id="seating">
-      <div class="shell reveal">
-        <header class="section-title">
-          <p>04 · SEATING</p>
+    <section class="page-section soft-gold" id="seating" data-invite-visible="full">
+      <div class="shell seat-lookup-shell">
+        <header class="section-title seat-title reveal">
+          <p>SEAT LOOKUP</p>
           <h2>座位查詢</h2>
+          <span>歡迎蒞臨我們的婚禮<br>請輸入您的姓名即可快速查詢桌位。</span>
         </header>
-        <div class="glass-card feature-card">
-          <div class="feature-number" aria-hidden="true">04</div>
-          <div class="feature-copy">
-            <p class="label">COMING SOON</p>
-            <h3>找到屬於您的位置</h3>
-            <p>婚宴前將開放姓名查詢，讓您快速找到桌次與座位。</p>
-            <button type="button" disabled>尚未開放</button>
-          </div>
+
+        <div class="seat-lookup-stage reveal">
+          <div class="lookup-rule" aria-hidden="true"></div>
+          <form class="seat-search" id="seat-search" novalidate>
+            <label class="sr-only" for="guest-name">賓客姓名</label>
+            <div class="search-field">
+              <span class="search-icon" aria-hidden="true"></span>
+              <input id="guest-name" name="guest-name" type="text" placeholder="請輸入姓名" autocomplete="name">
+            </div>
+            <p class="lookup-hint" id="lookup-hint" aria-live="polite">請先輸入姓名。</p>
+            <button class="button lookup-button" type="submit">
+              <span class="loading-spinner" aria-hidden="true"></span>
+              <span class="button-label">查詢座位</span>
+            </button>
+          </form>
+          <div class="lookup-rule" aria-hidden="true"></div>
+
+          <div class="lookup-result" id="lookup-result" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
       </div>
     </section>
 
-    <section class="page-section" id="gallery">
-      <div class="shell reveal">
-        <header class="section-title">
-          <p>05 · GALLERY</p>
-          <h2>婚紗相簿</h2>
-        </header>
-        <div class="glass-card feature-card gallery-card">
-          <div class="gallery-preview" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-          <div class="feature-copy">
-            <p class="label">OUR STORY</p>
-            <h3>收藏我們的珍貴片刻</h3>
-            <p>婚紗相簿即將上線，與您分享一路走來的溫柔與喜悅。</p>
-            <button type="button" disabled>敬請期待</button>
-          </div>
+    <section class="story-gallery" id="gallery">
+      <header class="section-title story-title shell reveal">
+        <p>05 · GALLERY</p>
+        <h2>OUR STORY</h2>
+        <span>每一張照片，都記錄著我們一路走來的點滴。</span>
+      </header>
+
+      <button class="gallery-media gallery-hero reveal" type="button" data-gallery-index="0" aria-label="開啟婚紗相簿第 1 張照片">
+        <img src="assets/gallery/01.jpg" alt="子靖與勤萱婚紗照 1" loading="lazy">
+        <span class="photo-index">01</span>
+      </button>
+
+      <div class="story-sequence shell">
+        <div class="story-pair wide-left">
+          <button class="gallery-media landscape reveal" type="button" data-gallery-index="1" aria-label="開啟婚紗相簿第 2 張照片">
+            <img src="assets/gallery/02.jpg" alt="子靖與勤萱婚紗照 2" loading="lazy"><span class="photo-index">02</span>
+          </button>
+          <button class="gallery-media portrait reveal" type="button" data-gallery-index="2" aria-label="開啟婚紗相簿第 3 張照片">
+            <img src="assets/gallery/03.jpg" alt="子靖與勤萱婚紗照 3" loading="lazy"><span class="photo-index">03</span>
+          </button>
         </div>
+
+        <div class="story-pair wide-right">
+          <button class="gallery-media portrait reveal" type="button" data-gallery-index="4" aria-label="開啟婚紗相簿第 5 張照片">
+            <img src="assets/gallery/05.jpg" alt="子靖與勤萱婚紗照 5" loading="lazy"><span class="photo-index">05</span>
+          </button>
+          <button class="gallery-media landscape reveal" type="button" data-gallery-index="3" aria-label="開啟婚紗相簿第 4 張照片">
+            <img src="assets/gallery/04.jpg" alt="子靖與勤萱婚紗照 4" loading="lazy"><span class="photo-index">04</span>
+          </button>
+        </div>
+
+        <button class="gallery-media story-panorama reveal" type="button" data-gallery-index="5" aria-label="開啟婚紗相簿第 6 張照片">
+          <img src="assets/gallery/06.jpg" alt="子靖與勤萱婚紗照 6" loading="lazy"><span class="photo-index">06</span>
+        </button>
+
+        <div class="portrait-pair">
+          <button class="gallery-media portrait reveal" type="button" data-gallery-index="6" aria-label="開啟婚紗相簿第 7 張照片">
+            <img src="assets/gallery/07.jpg" alt="子靖與勤萱婚紗照 7" loading="lazy"><span class="photo-index">07</span>
+          </button>
+          <button class="gallery-media portrait reveal" type="button" data-gallery-index="7" aria-label="開啟婚紗相簿第 8 張照片">
+            <img src="assets/gallery/08.jpg" alt="子靖與勤萱婚紗照 8" loading="lazy"><span class="photo-index">08</span>
+          </button>
+        </div>
+
+        <div class="story-pair final-pair">
+          <button class="gallery-media portrait reveal" type="button" data-gallery-index="8" aria-label="開啟婚紗相簿第 9 張照片">
+            <img src="assets/gallery/09.jpg" alt="子靖與勤萱婚紗照 9" loading="lazy"><span class="photo-index">09</span>
+          </button>
+          <button class="gallery-media landscape reveal" type="button" data-gallery-index="9" aria-label="開啟婚紗相簿第 10 張照片">
+            <img src="assets/gallery/10.jpg" alt="子靖與勤萱婚紗照 10" loading="lazy"><span class="photo-index">10</span>
+          </button>
+        </div>
+
+        <button class="gallery-media story-finale reveal" type="button" data-gallery-index="10" aria-label="開啟婚紗相簿第 11 張照片">
+          <img src="assets/gallery/11.jpg" alt="子靖與勤萱婚紗照 11" loading="lazy"><span class="photo-index">11</span>
+        </button>
       </div>
     </section>
 
-    <section class="page-section soft-blue" id="share">
-      <div class="shell reveal">
-        <header class="section-title">
-          <p>06 · PHOTO SHARING</p>
-          <h2>照片分享</h2>
-        </header>
-        <div class="glass-card feature-card share-card">
-          <div class="upload-symbol" aria-hidden="true"><span>↑</span></div>
-          <div class="feature-copy">
-            <p class="label">DROPBOX UPLOAD</p>
-            <h3>一起留下當天的回憶</h3>
-            <p>婚宴當日將開放 Dropbox 上傳連結，期待看見您鏡頭裡的每個美好瞬間。</p>
-            <button type="button" disabled>上傳連結準備中</button>
+    <section class="page-section soft-blue" id="share" data-invite-visible="wedding full">
+      <div class="shell share-shell">
+        <article class="glass-card share-card reveal">
+          <div class="share-mark" aria-hidden="true"><span></span></div>
+          <header class="share-heading">
+            <p>PHOTO SHARING</p>
+            <h2>分享婚宴中的美好時刻</h2>
+            <p class="share-intro">如果您在婚宴當天拍下了照片或影片，<br>歡迎上傳到我們的共同相簿，<br>一起收藏這份珍貴回憶。</p>
+          </header>
+
+          <div class="share-steps" aria-label="照片上傳步驟">
+            <div class="share-step">
+              <span>01</span>
+              <p>開啟共同相簿</p>
+            </div>
+            <div class="share-step">
+              <span>02</span>
+              <p>登入 Google 帳號</p>
+            </div>
+            <div class="share-step">
+              <span>03</span>
+              <p>選擇照片或影片並新增</p>
+            </div>
           </div>
+
+          <a class="button share-button" href="https://photos.app.goo.gl/3YU9RTzuazG54w1M7" target="_blank" rel="noopener noreferrer">開啟共同相簿</a>
+          <p class="share-note">上傳照片時需要登入 Google 帳號。<br>進入相簿後，請點選「新增相片」或「加入相簿」即可分享。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="page-section messages-section" id="messages">
+      <div class="shell messages-shell">
+        <article class="glass-card messages-card reveal">
+          <div class="message-ornament" aria-hidden="true"><span></span><i></i><span></span></div>
+          <header class="messages-heading">
+            <p>A MESSAGE FOR US</p>
+            <h2>留下一句祝福</h2>
+            <p class="messages-intro">歡迎寫下想對我們說的話。<br>您的祝福將由我們珍藏，<br>並可能收錄在婚禮紀念影片中。</p>
+          </header>
+          <a class="button messages-button" href="https://docs.google.com/forms/d/e/1FAIpQLScCk5YFzDj1qpfiAMWVTekNYV9rOgv4UbR5N_9h_2cYrpi1Dg/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">寫下祝福</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="page-section faq-section" id="faq" data-invite-visible="wedding full">
+      <div class="shell faq-shell">
+        <header class="section-title reveal">
+          <p>QUESTIONS & ANSWERS</p>
+          <h2>常見問題</h2>
+        </header>
+        <div class="faq-list reveal">
+          <details>
+            <summary>婚禮幾點開放入場？<span aria-hidden="true"></span></summary>
+            <p>13:30 開放入場，婚禮將於 14:00 開始，建議預留交通與入場時間。</p>
+          </details>
+          <details>
+            <summary>婚禮場地位於哪裡？<span aria-hidden="true"></span></summary>
+            <p>婚禮位於耶和華見證人王國聚會所－竹東會眾，會場在 2 樓。</p>
+          </details>
+          <details data-invite-visible="full">
+            <summary>婚宴幾點開始？<span aria-hidden="true"></span></summary>
+            <p>17:00 開放入場，宴席將於 18:00 正式開始。</p>
+          </details>
+          <details data-invite-visible="full">
+            <summary>婚宴停車如何辦理消磁？<span aria-hidden="true"></span></summary>
+            <p>地下停車場由服務人員至桌邊協助；戶外停車場請於離場前至櫃檯報車號。</p>
+          </details>
         </div>
       </div>
     </section>
   </main>
+
+  <div class="lightbox" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="婚紗相簿燈箱" hidden>
+    <button class="lightbox-close" type="button" aria-label="關閉相簿">×</button>
+    <button class="lightbox-nav lightbox-prev" type="button" aria-label="上一張照片"><span aria-hidden="true">‹</span></button>
+    <div class="lightbox-stage">
+      <img class="lightbox-image" alt="">
+      <p class="lightbox-counter" aria-live="polite"></p>
+    </div>
+    <button class="lightbox-nav lightbox-next" type="button" aria-label="下一張照片"><span aria-hidden="true">›</span></button>
+  </div>
 
   <footer>
     <p>子靖 <span>＆</span> 勤萱</p>
