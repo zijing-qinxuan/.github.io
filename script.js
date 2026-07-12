@@ -247,17 +247,28 @@ function setRsvpSubmitting(submitting) {
   rsvpForm.setAttribute('aria-busy', String(submitting));
 }
 
+function scrollToRsvpSuccessCard() {
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      rsvpSuccess.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    });
+  });
+}
+
 function showRsvpSuccess(previouslySubmitted = false, ceremonyAttendance = '', action = 'created') {
   const wasUpdated = !previouslySubmitted && action === 'updated';
   rsvpSuccessTitle.textContent = previouslySubmitted
     ? '您已完成出席回覆'
-    : (wasUpdated ? '回覆已更新' : '謝謝您的回覆');
+    : (wasUpdated ? '✔ 回覆已更新' : '✔ 回覆已送出');
   const isOnlineCeremony = !previouslySubmitted && ceremonyAttendance === '線上參加';
   let successMessage = previouslySubmitted
     ? '我們已收到您的出席資訊。<br>期待與您一起分享這個重要的日子。'
     : (wasUpdated
-      ? '我們已更新您的出席資訊，<br>最新提交的內容將取代先前的回覆。'
-      : '您的出席回覆已成功送出。<br>期待與您一起分享這個重要的日子。');
+      ? '您的最新回覆已成功儲存，<br>已取代先前資料。'
+      : '期待與您一起分享這個重要的日子。');
 
   if (isOnlineCeremony) {
     successMessage += '<br><br>我們已為您登記線上參加婚禮。<br>正式連結將於婚禮前透過原邀請訊息提供，<br>請於婚禮前再次查看 LINE 訊息。';
@@ -275,6 +286,7 @@ function showRsvpSuccess(previouslySubmitted = false, ceremonyAttendance = '', a
   rsvpForm.classList.remove('is-submitted');
   rsvpSuccess.hidden = false;
   setRsvpExpanded(true);
+  if (!previouslySubmitted) scrollToRsvpSuccessCard();
 }
 
 function readStoredRsvp() {
