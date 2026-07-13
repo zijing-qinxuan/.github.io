@@ -2,7 +2,6 @@ const ONLINE_MEETING_URL = "";
 const RSVP_ENDPOINT =
   "https://script.google.com/macros/s/AKfycbyvs0LurNvxURz_e15WG-ky2d1EFydHfJtbLYkbb1XTk_7Ol1RndFNAQTbcvFQKGwFbKw/exec";
 const VALID_INVITE_MODES = ["wedding", "full", "online"];
-
 const INVITE_CONFIG = {
   wedding: {
     heroText: ["婚禮｜14:00"],
@@ -251,9 +250,12 @@ function scrollToRsvpSuccessCard() {
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
       rsvpSuccess.scrollIntoView({
-        behavior: 'smooth',
+        behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
         block: 'center'
       });
+      window.setTimeout(() => {
+        rsvpSuccessTitle.focus({ preventScroll: true });
+      }, reducedMotionQuery.matches ? 0 : 500);
     });
   });
 }
@@ -317,6 +319,9 @@ function validateRsvpForm() {
   document.querySelector('#rsvp-vegetarian-error').textContent = '';
   rsvpName.removeAttribute('aria-invalid');
   rsvpPhone.removeAttribute('aria-invalid');
+  rsvpForm.querySelectorAll('[data-rsvp-question]').forEach((question) => {
+    question.removeAttribute('aria-invalid');
+  });
   rsvpForm.querySelectorAll('[data-rsvp-error]').forEach((error) => { error.textContent = ''; });
 
   if (!rsvpName.value.trim()) {
@@ -342,6 +347,7 @@ function validateRsvpForm() {
     if (selectedRsvpValue(question)) return;
     const error = rsvpForm.querySelector(`[data-rsvp-error="${question}"]`);
     error.textContent = '請選擇您的出席狀況。';
+    error.closest('.rsvp-question').setAttribute('aria-invalid', 'true');
     if (!firstInvalid) firstInvalid = rsvpForm.querySelector(`input[name="${question}"]`);
   });
 
@@ -492,8 +498,22 @@ rsvpForm.querySelectorAll('input[type="radio"]').forEach((radio) => {
   radio.addEventListener('change', () => {
     const error = rsvpForm.querySelector(`[data-rsvp-error="${radio.name}"]`);
     if (error) error.textContent = '';
+    radio.closest('.rsvp-question')?.removeAttribute('aria-invalid');
     updateRsvpAttendanceCounts();
   });
+});
+
+rsvpName.addEventListener('input', () => {
+  if (!rsvpName.value.trim()) return;
+  rsvpName.removeAttribute('aria-invalid');
+  document.querySelector('#rsvp-name-error').textContent = '';
+});
+
+rsvpPhone.addEventListener('input', () => {
+  const normalizedPhone = rsvpPhone.value.trim().replace(/[\s-]+/g, '');
+  if ((normalizedPhone.match(/\d/g) || []).length < 8) return;
+  rsvpPhone.removeAttribute('aria-invalid');
+  document.querySelector('#rsvp-phone-error').textContent = '';
 });
 
 rsvpForm.querySelectorAll('[data-counter]').forEach((button) => {
@@ -565,7 +585,9 @@ navLinks.querySelectorAll('a').forEach((link) => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') setMenu(false);
+  if (event.key !== 'Escape' || menuButton.getAttribute('aria-expanded') !== 'true') return;
+  setMenu(false);
+  menuButton.focus({ preventScroll: true });
 });
 
 let resizeTicking = false;
@@ -654,6 +676,13 @@ if ('IntersectionObserver' in window) {
 } else {
   revealItems.forEach((item) => item.classList.add('is-visible'));
 }
+
+document.querySelectorAll('.faq-list details').forEach((details) => {
+  const summary = details.querySelector('summary');
+  const syncExpandedState = () => summary.setAttribute('aria-expanded', String(details.open));
+  syncExpandedState();
+  details.addEventListener('toggle', syncExpandedState);
+});
 
 const seatData = {
   '王小明': { table: 'A12', guests: '2 位', meal: '一般餐' },
@@ -797,7 +826,7 @@ function showGalleryImage(index) {
   lightboxImage.width = image.width;
   lightboxImage.height = image.height;
   lightboxImage.src = image.src;
-  lightboxImage.alt = `子靖與勤萱婚紗照 ${currentGalleryIndex + 1}`;
+  lightboxImage.alt = '子靖與勤萱婚紗照';
   lightboxCounter.textContent = `${String(currentGalleryIndex + 1).padStart(2, '0')} / ${galleryImages.length}`;
 }
 
@@ -850,9 +879,36 @@ lightbox.addEventListener('click', (event) => {
 
 document.addEventListener('keydown', (event) => {
   if (lightbox.hidden) return;
-  if (event.key === 'Escape') closeLightbox();
-  if (event.key === 'ArrowLeft') showGalleryImage(currentGalleryIndex - 1);
-  if (event.key === 'ArrowRight') showGalleryImage(currentGalleryIndex + 1);
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeLightbox();
+    return;
+  }
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    showGalleryImage(currentGalleryIndex - 1);
+    return;
+  }
+  if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    showGalleryImage(currentGalleryIndex + 1);
+    return;
+  }
+  if (event.key !== 'Tab') return;
+
+  const focusableControls = [lightboxClose, lightboxPrev, lightboxNext];
+  const firstControl = focusableControls[0];
+  const lastControl = focusableControls[focusableControls.length - 1];
+  if (event.shiftKey && document.activeElement === firstControl) {
+    event.preventDefault();
+    lastControl.focus();
+  } else if (!event.shiftKey && document.activeElement === lastControl) {
+    event.preventDefault();
+    firstControl.focus();
+  } else if (!lightbox.contains(document.activeElement)) {
+    event.preventDefault();
+    firstControl.focus();
+  }
 });
 
 lightbox.addEventListener('touchstart', (event) => {

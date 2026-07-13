@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#102740">
+  <meta name="theme-color" content="#f5f0e8">
   <title>子靖 ＆ 勤萱｜婚禮邀請</title>
   <meta name="description" content="誠摯邀請您與我們一同見證這個重要的日子。請點擊專屬邀請連結查看邀請內容。">
   <meta property="og:type" content="website">
@@ -11,12 +11,15 @@
   <meta property="og:title" content="子靖 ＆ 勤萱｜婚禮邀請">
   <meta property="og:description" content="誠摯邀請您與我們一同見證這個重要的日子。請點擊專屬邀請連結查看邀請內容。">
   <meta property="og:url" content="https://zijing-qinxuan.github.io/">
-  <meta property="og:image" content="https://zijing-qinxuan.github.io/assets/hero.jpg">
+  <meta property="og:image" content="https://zijing-qinxuan.github.io/assets/og-wedding.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="子靖與勤萱的婚禮邀請">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="子靖 ＆ 勤萱｜婚禮邀請">
-  <meta name="twitter:description" content="誠摯邀請您與我們一同見證這個重要的日子。請點擊專屬邀請連結查看邀請內容。">
-  <meta name="twitter:image" content="https://zijing-qinxuan.github.io/assets/hero.jpg">
+  <meta name="twitter:description" content="誠摯邀請您與我們一同見證這個重要的日子。">
+  <meta name="twitter:image" content="https://zijing-qinxuan.github.io/assets/og-wedding.jpg">
+  <link rel="canonical" href="https://zijing-qinxuan.github.io/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Serif+TC:wght@300;400;500;600;700&amp;display=swap">
@@ -31,7 +34,7 @@
     <span class="landing-brand" aria-label="子靖與勤萱">子靖 <span>＆</span> 勤萱</span>
 
     <div class="landing-content">
-      <h1>子靖 <span>＆</span> 勤萱</h1>
+      <p class="landing-title">子靖 <span>＆</span> 勤萱</p>
       <p class="landing-kicker">Wedding Invitation</p>
       <p class="landing-date">2026 ・ 12 ・ 26</p>
       <div class="landing-line" aria-hidden="true"></div>
@@ -78,14 +81,14 @@
   </header>
 
   <main>
-    <section class="hero" id="home" aria-label="子靖與勤萱婚宴邀請" data-invite="section:hero">
+    <section class="hero" id="home" aria-labelledby="hero-title" data-invite="section:hero">
       <div class="hero-media" aria-hidden="true">
-        <img class="hero-image" src="assets/hero.jpg" alt="" width="1412" height="1802" decoding="async" fetchpriority="high">
+        <img class="hero-image" src="assets/hero.jpg" alt="" aria-hidden="true" width="1412" height="1802" decoding="async" fetchpriority="high">
       </div>
       <div class="hero-overlay" aria-hidden="true"></div>
       <div class="hero-content">
         <p class="hero-kicker">WE'RE GETTING MARRIED</p>
-        <h1>子靖 <span>＆</span> 勤萱</h1>
+        <h1 id="hero-title">子靖 <span>＆</span> 勤萱</h1>
         <p class="hero-date">2026.12.26</p>
         <p class="wedding-countdown" id="wedding-countdown" aria-live="polite"></p>
         <div class="hero-schedule" id="hero-schedule" aria-label="邀請行程"></div>
@@ -97,10 +100,10 @@
       </a>
     </section>
 
-    <section class="page-section invitation-note-section" id="invitation-note" data-invite="section:invitation-note">
+    <section class="page-section invitation-note-section" id="invitation-note" aria-labelledby="invitation-note-title" data-invite="section:invitation-note">
       <div class="shell invitation-note-wrap reveal">
         <p class="invitation-note-kicker">DEAR FAMILY &amp; FRIENDS</p>
-        <h2>給親愛的家人與朋友</h2>
+        <h2 id="invitation-note-title">給親愛的家人與朋友</h2>
         <span class="invitation-note-line" aria-hidden="true"></span>
         <div class="invitation-note-copy">
           <p>謝謝您願意在百忙之中，<br>與我們一起迎接人生的重要時刻。</p>
@@ -112,12 +115,12 @@
       </div>
     </section>
 
-    <section class="page-section rsvp-section" id="rsvp" data-invite="section:rsvp">
+    <section class="page-section rsvp-section" id="rsvp" aria-labelledby="rsvp-title" data-invite="section:rsvp">
       <div class="shell rsvp-shell">
         <article class="glass-card rsvp-card reveal">
           <header class="rsvp-heading">
             <p>RSVP</p>
-            <h2>出席回覆</h2>
+            <h2 id="rsvp-title">出席回覆</h2>
             <p>我們誠摯期待您的蒞臨。<br>為了讓我們能更完善地安排，<br>請花約 30 秒完成出席回覆。</p>
           </header>
 
@@ -134,47 +137,47 @@
               <div class="rsvp-form-grid">
                 <div class="rsvp-field">
                   <label for="rsvp-name">姓名 <span aria-hidden="true">*</span></label>
-                  <input id="rsvp-name" name="name" type="text" placeholder="請輸入您的姓名" autocomplete="name" aria-describedby="rsvp-name-error" required>
+                  <input id="rsvp-name" name="name" type="text" placeholder="請輸入您的姓名" autocomplete="name" aria-describedby="rsvp-name-error" aria-required="true" required>
                   <p class="rsvp-error" id="rsvp-name-error" aria-live="polite"></p>
                 </div>
                 <div class="rsvp-field">
                   <label for="rsvp-phone">聯絡電話 <span aria-hidden="true">*</span></label>
-                  <input id="rsvp-phone" name="phone" type="tel" inputmode="tel" placeholder="方便聯絡的電話" autocomplete="tel" aria-describedby="rsvp-phone-help rsvp-phone-error" required>
+                  <input id="rsvp-phone" name="phone" type="tel" inputmode="tel" placeholder="方便聯絡的電話" autocomplete="tel" aria-describedby="rsvp-phone-help rsvp-phone-error" aria-required="true" required>
                   <p class="rsvp-field-description" id="rsvp-phone-help">僅供新人確認與更新您的出席回覆使用。</p>
                   <p class="rsvp-error" id="rsvp-phone-error" aria-live="polite"></p>
                 </div>
               </div>
 
-              <fieldset class="rsvp-question" data-rsvp-question="ceremony">
-                <legend>是否參加婚禮？</legend>
+              <fieldset class="rsvp-question" data-rsvp-question="ceremony" aria-required="true" aria-describedby="rsvp-ceremony-error">
+                <legend>是否參加婚禮？ <span aria-hidden="true">*</span></legend>
                 <div class="rsvp-options">
-                  <label><input type="radio" name="ceremony" value="現場參加"><span>現場參加</span></label>
+                  <label><input type="radio" name="ceremony" value="現場參加" required><span>現場參加</span></label>
                   <label><input type="radio" name="ceremony" value="線上參加"><span>線上參加</span></label>
                   <label><input type="radio" name="ceremony" value="無法參加"><span>無法參加</span></label>
                 </div>
-                <p class="rsvp-error" data-rsvp-error="ceremony" aria-live="polite"></p>
+                <p class="rsvp-error" id="rsvp-ceremony-error" data-rsvp-error="ceremony" aria-live="polite"></p>
               </fieldset>
               <input id="rsvp-ceremony-empty" name="ceremony" type="hidden" value="" disabled>
 
-              <fieldset class="rsvp-question" data-rsvp-question="banquet">
-                <legend>是否參加婚宴？</legend>
+              <fieldset class="rsvp-question" data-rsvp-question="banquet" aria-required="true" aria-describedby="rsvp-banquet-error">
+                <legend>是否參加婚宴？ <span aria-hidden="true">*</span></legend>
                 <div class="rsvp-options">
-                  <label><input type="radio" name="banquet" value="可以參加"><span>可以參加</span></label>
+                  <label><input type="radio" name="banquet" value="可以參加" required><span>可以參加</span></label>
                   <label><input type="radio" name="banquet" value="無法參加"><span>無法參加</span></label>
                   <label><input type="radio" name="banquet" value="尚未確定"><span>尚未確定</span></label>
                 </div>
-                <p class="rsvp-error" data-rsvp-error="banquet" aria-live="polite"></p>
+                <p class="rsvp-error" id="rsvp-banquet-error" data-rsvp-error="banquet" aria-live="polite"></p>
               </fieldset>
               <input id="rsvp-banquet-empty" name="banquet" type="hidden" value="" disabled>
 
-              <fieldset class="rsvp-question" data-rsvp-question="online">
-                <legend>是否預計線上參加婚禮？</legend>
+              <fieldset class="rsvp-question" data-rsvp-question="online" aria-required="true" aria-describedby="rsvp-online-error">
+                <legend>是否預計線上參加婚禮？ <span aria-hidden="true">*</span></legend>
                 <div class="rsvp-options">
-                  <label><input type="radio" name="online" value="會參加"><span>會參加</span></label>
+                  <label><input type="radio" name="online" value="會參加" required><span>會參加</span></label>
                   <label><input type="radio" name="online" value="無法參加"><span>無法參加</span></label>
                   <label><input type="radio" name="online" value="尚未確定"><span>尚未確定</span></label>
                 </div>
-                <p class="rsvp-error" data-rsvp-error="online" aria-live="polite"></p>
+                <p class="rsvp-error" id="rsvp-online-error" data-rsvp-error="online" aria-live="polite"></p>
               </fieldset>
               <input id="rsvp-online-empty" name="online" type="hidden" value="" disabled>
 
@@ -208,16 +211,16 @@
                 <textarea id="rsvp-message" name="message" rows="4" placeholder="想對我們說的話" aria-describedby="rsvp-message-description"></textarea>
               </div>
 
-              <p class="rsvp-submit-error" id="rsvp-submit-error" aria-live="polite"></p>
+              <p class="rsvp-submit-error" id="rsvp-submit-error" role="alert" aria-live="assertive" aria-atomic="true"></p>
               <button class="button rsvp-submit" id="rsvp-submit" type="submit">
                 <span class="loading-spinner" aria-hidden="true"></span>
-                <span class="rsvp-submit-label">送出回覆</span>
+                <span class="rsvp-submit-label" aria-live="polite" aria-atomic="true">送出回覆</span>
               </button>
             </form>
 
             <div class="rsvp-success" id="rsvp-success" role="status" hidden>
               <div class="rsvp-success-mark" aria-hidden="true"><span></span></div>
-              <h3 id="rsvp-success-title">謝謝您的回覆</h3>
+              <h3 id="rsvp-success-title" tabindex="-1">謝謝您的回覆</h3>
               <p id="rsvp-success-message">我們已收到您的出席資訊。<br>期待與您一起分享這個重要的日子。</p>
               <p class="rsvp-update-note">使用相同的姓名與聯絡電話再次送出，<br>系統會更新您原本的回覆。</p>
               <div class="rsvp-success-actions">
@@ -230,11 +233,11 @@
       </div>
     </section>
 
-    <section class="page-section gift-note-section" id="gift-note" data-invite="section:gift-note">
+    <section class="page-section gift-note-section" id="gift-note" aria-labelledby="gift-note-title" data-invite="section:gift-note">
       <div class="shell gift-note-wrap reveal">
         <div class="gift-note-panel">
           <p class="gift-note-kicker">A LITTLE NOTE</p>
-          <h2>一點小心意</h2>
+          <h2 id="gift-note-title">一點小心意</h2>
           <span class="gift-note-line" aria-hidden="true"></span>
           <div class="gift-note-copy">
             <p>您願意來到現場，<br>與我們一起見證這個重要的時刻，<br>就是我們最珍貴的禮物。</p>
@@ -244,11 +247,11 @@
       </div>
     </section>
 
-    <section class="page-section ceremony-section" id="ceremony-info" data-invite="section:ceremony-info">
+    <section class="page-section ceremony-section" id="ceremony-info" aria-labelledby="ceremony-info-title" data-invite="section:ceremony-info">
       <div class="shell wedding-info-wrap">
         <header class="section-title reveal">
           <p>WEDDING CEREMONY</p>
-          <h2>婚禮資訊</h2>
+          <h2 id="ceremony-info-title">婚禮資訊</h2>
         </header>
 
         <div class="wedding-facts">
@@ -295,24 +298,24 @@
       </div>
     </section>
 
-    <section class="page-section ceremony-parking-section" id="ceremony-parking" data-invite="section:ceremony-parking">
+    <section class="page-section ceremony-parking-section" id="ceremony-parking" aria-labelledby="ceremony-parking-title" data-invite="section:ceremony-parking">
       <div class="shell ceremony-parking-shell">
         <header class="section-title reveal">
           <p>CEREMONY PARKING</p>
-          <h2>婚禮場地停車</h2>
+          <h2 id="ceremony-parking-title">婚禮場地停車</h2>
           <span>婚禮場地附近提供數個可停車位置，<br>建議提前抵達並依現場交通標誌停放。</span>
         </header>
 
         <div class="ceremony-parking-grid">
           <article class="glass-card ceremony-parking-card reveal">
             <div class="ceremony-parking-image image-shell">
-              <img src="assets/ceremony-parking-roadside.jpg" alt="中興路一段婚禮場地附近路邊停車位置" width="1980" height="1224" loading="lazy" decoding="async">
+              <img src="assets/ceremony-parking-roadside.jpg" alt="中興路一段路邊停車位置" width="1980" height="1224" loading="lazy" decoding="async">
             </div>
             <div class="ceremony-parking-copy">
               <h3><span class="ceremony-title-pin" aria-hidden="true"></span>中興路一段路邊停車</h3>
               <p class="ceremony-parking-walk">步行約 1-5 分鐘</p>
               <p>位於聚會所旁邊的中興路一段沿線，<br>請依現場交通標誌與道路規定停放。</p>
-              <a class="button" href="https://maps.app.goo.gl/U575KgMcRK32ncYg8" target="_blank" rel="noopener noreferrer">Google Maps 導航</a>
+              <a class="button" href="https://maps.app.goo.gl/U575KgMcRK32ncYg8" target="_blank" rel="noopener noreferrer" aria-label="查看中興路一段路邊停車位置">Google Maps 導航</a>
             </div>
           </article>
 
@@ -324,7 +327,7 @@
               <h3><span class="ceremony-title-pin" aria-hidden="true"></span>聚會所對面巷內停車</h3>
               <p class="ceremony-parking-walk">步行約 2-4 分鐘</p>
               <p>位於聚會所對面的巷子內，<br>請依現場交通標誌與可停放範圍停車。</p>
-              <a class="button" href="https://maps.app.goo.gl/Sue1oMHLBHa4uXTNA" target="_blank" rel="noopener noreferrer">Google Maps 導航</a>
+              <a class="button" href="https://maps.app.goo.gl/Sue1oMHLBHa4uXTNA" target="_blank" rel="noopener noreferrer" aria-label="查看聚會所對面巷內停車位置">Google Maps 導航</a>
             </div>
           </article>
 
@@ -336,7 +339,7 @@
               <h3><span class="ceremony-title-pin" aria-hidden="true"></span>鄰近停車位置</h3>
               <p class="ceremony-parking-walk">步行約 3-5 分鐘</p>
               <p>距離婚禮場地步行約 3-5 分鐘，<br>可依現場交通狀況自由選擇停放。</p>
-              <a class="button" href="https://maps.app.goo.gl/2j1SvkyWpsoGhB1k9" target="_blank" rel="noopener noreferrer">Google Maps 導航</a>
+              <a class="button" href="https://maps.app.goo.gl/2j1SvkyWpsoGhB1k9" target="_blank" rel="noopener noreferrer" aria-label="查看步行約三分鐘的停車位置">Google Maps 導航</a>
             </div>
           </article>
         </div>
@@ -345,11 +348,11 @@
       </div>
     </section>
 
-    <section class="ceremony-notes page-section soft-blue" id="ceremony-notes" data-invite="section:ceremony-notes">
+    <section class="ceremony-notes page-section soft-blue" id="ceremony-notes" aria-labelledby="ceremony-notes-title" data-invite="section:ceremony-notes">
       <div class="shell reveal">
         <header class="section-title">
           <p>BEFORE YOU ARRIVE</p>
-          <h2>婚禮注意事項</h2>
+          <h2 id="ceremony-notes-title">婚禮注意事項</h2>
         </header>
         <div class="ceremony-note-grid">
           <article class="glass-card ceremony-note">
@@ -371,11 +374,11 @@
       </div>
     </section>
 
-    <section class="page-section" id="wedding-info" data-invite="section:wedding-info">
+    <section class="page-section" id="wedding-info" aria-labelledby="wedding-info-title" data-invite="section:wedding-info">
       <div class="shell wedding-info-wrap">
         <header class="section-title reveal">
           <p>WEDDING INFORMATION</p>
-          <h2>婚宴資訊</h2>
+          <h2 id="wedding-info-title">婚宴資訊</h2>
           <span class="couple-name">子靖 <i>＆</i> 勤萱</span>
         </header>
 
@@ -412,11 +415,11 @@
       </div>
     </section>
 
-    <section class="page-section soft-blue" id="venue" data-invite="section:venue">
+    <section class="page-section soft-blue" id="venue" aria-labelledby="venue-title" data-invite="section:venue">
       <div class="shell reveal">
         <header class="section-title">
           <p>02 · GETTING THERE</p>
-          <h2>交通與抵達</h2>
+          <h2 id="venue-title">交通與抵達</h2>
         </header>
 
         <div class="arrival-guides">
@@ -441,18 +444,18 @@
               <p class="guide-description">抵達會館後，請依現場指示搭乘電梯前往 2 樓。<br>婚宴場地為星辰劇場。</p>
             </div>
             <div class="guide-image image-shell">
-              <img src="assets/venue-entrance.jpg" alt="晶宴會館入口與電梯指引區域" width="1024" height="683" loading="lazy" decoding="async">
+              <img src="assets/venue-entrance.jpg" alt="晶宴會館御豐館星辰劇場入口" width="1024" height="683" loading="lazy" decoding="async">
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="page-section" id="parking" data-invite="section:parking">
+    <section class="page-section" id="parking" aria-labelledby="parking-title" data-invite="section:parking">
       <div class="shell reveal">
         <header class="section-title">
           <p>03 · PARKING</p>
-          <h2>停車資訊</h2>
+          <h2 id="parking-title">停車資訊</h2>
           <span>會館備有地下與戶外停車空間。</span>
         </header>
         <div class="parking-grid">
@@ -465,7 +468,7 @@
               <span class="parking-badge">推薦</span>
               <h3>地下停車場</h3>
               <p>建議優先停放地下停車場，可直接搭乘電梯前往 2 樓星辰劇場。<br><br>婚宴期間服務人員會到桌邊協助辦理停車消磁，無需自行處理。</p>
-              <a class="text-link" href="https://maps.app.goo.gl/syt4XhgH2ppqW18v9" target="_blank" rel="noopener noreferrer">開啟導航 <span aria-hidden="true">↗</span></a>
+              <a class="text-link" href="https://maps.app.goo.gl/syt4XhgH2ppqW18v9" target="_blank" rel="noopener noreferrer" aria-label="查看晶宴會館地下停車場位置">開啟導航 <span aria-hidden="true">↗</span></a>
             </div>
           </article>
           <article class="glass-card parking-card reveal delay">
@@ -476,18 +479,18 @@
               <p class="label">OUTDOOR PARKING</p>
               <h3>戶外平面停車場</h3>
               <p>車位較多，步行約 2～3 分鐘即可抵達會館。<br><br>離場前請至櫃檯報車號，由工作人員協助辦理停車消磁。</p>
-              <a class="text-link" href="https://maps.app.goo.gl/YsNmcXz2q3yABRh56" target="_blank" rel="noopener noreferrer">開啟導航 <span aria-hidden="true">↗</span></a>
+              <a class="text-link" href="https://maps.app.goo.gl/YsNmcXz2q3yABRh56" target="_blank" rel="noopener noreferrer" aria-label="查看晶宴會館戶外平面停車場位置">開啟導航 <span aria-hidden="true">↗</span></a>
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="page-section soft-gold" id="seating" data-invite="section:seating">
+    <section class="page-section soft-gold" id="seating" aria-labelledby="seating-title" data-invite="section:seating">
       <div class="shell seat-lookup-shell">
         <header class="section-title seat-title reveal">
           <p>SEAT LOOKUP</p>
-          <h2>座位查詢</h2>
+          <h2 id="seating-title">座位查詢</h2>
           <span>歡迎蒞臨我們的婚禮<br>請輸入您的姓名即可快速查詢桌位。</span>
         </header>
 
@@ -512,72 +515,72 @@
       </div>
     </section>
 
-    <section class="story-gallery" id="gallery" data-invite="section:gallery">
+    <section class="story-gallery" id="gallery" aria-labelledby="gallery-title" data-invite="section:gallery">
       <header class="section-title story-title shell reveal">
         <p>05 · GALLERY</p>
-        <h2>OUR STORY</h2>
+        <h2 id="gallery-title">OUR STORY</h2>
         <span>每一張照片，都記錄著我們一路走來的點滴。</span>
       </header>
 
       <button class="gallery-media gallery-hero reveal" type="button" data-gallery-index="0" aria-label="開啟婚紗相簿第 1 張照片">
-        <img src="assets/gallery/01-thumb.jpg" alt="子靖與勤萱婚紗照 1" width="1200" height="800" loading="lazy" decoding="async">
+        <img src="assets/gallery/01-thumb.jpg" alt="子靖與勤萱婚紗照" width="1200" height="800" loading="lazy" decoding="async">
         <span class="photo-index">01</span>
       </button>
 
       <div class="story-sequence shell">
         <div class="story-pair wide-left">
           <button class="gallery-media landscape reveal" type="button" data-gallery-index="1" aria-label="開啟婚紗相簿第 2 張照片">
-            <img src="assets/gallery/02-thumb.jpg" alt="子靖與勤萱婚紗照 2" width="1200" height="798" loading="lazy" decoding="async"><span class="photo-index">02</span>
+            <img src="assets/gallery/02-thumb.jpg" alt="子靖與勤萱婚紗照" width="1200" height="798" loading="lazy" decoding="async"><span class="photo-index">02</span>
           </button>
           <button class="gallery-media portrait reveal" type="button" data-gallery-index="2" aria-label="開啟婚紗相簿第 3 張照片">
-            <img src="assets/gallery/03-thumb.jpg" alt="子靖與勤萱婚紗照 3" width="940" height="1200" loading="lazy" decoding="async"><span class="photo-index">03</span>
+            <img src="assets/gallery/03-thumb.jpg" alt="子靖與勤萱婚紗照" width="940" height="1200" loading="lazy" decoding="async"><span class="photo-index">03</span>
           </button>
         </div>
 
         <div class="story-pair wide-right">
           <button class="gallery-media portrait reveal" type="button" data-gallery-index="4" aria-label="開啟婚紗相簿第 5 張照片">
-            <img src="assets/gallery/05-thumb.jpg" alt="子靖與勤萱婚紗照 5" width="939" height="1200" loading="lazy" decoding="async"><span class="photo-index">05</span>
+            <img src="assets/gallery/05-thumb.jpg" alt="子靖與勤萱婚紗照" width="939" height="1200" loading="lazy" decoding="async"><span class="photo-index">05</span>
           </button>
           <button class="gallery-media landscape reveal" type="button" data-gallery-index="3" aria-label="開啟婚紗相簿第 4 張照片">
-            <img src="assets/gallery/04-thumb.jpg" alt="子靖與勤萱婚紗照 4" width="1200" height="798" loading="lazy" decoding="async"><span class="photo-index">04</span>
+            <img src="assets/gallery/04-thumb.jpg" alt="子靖與勤萱婚紗照" width="1200" height="798" loading="lazy" decoding="async"><span class="photo-index">04</span>
           </button>
         </div>
 
         <button class="gallery-media story-panorama reveal" type="button" data-gallery-index="5" aria-label="開啟婚紗相簿第 6 張照片">
-          <img src="assets/gallery/06-thumb.jpg" alt="子靖與勤萱婚紗照 6" width="1200" height="800" loading="lazy" decoding="async"><span class="photo-index">06</span>
+          <img src="assets/gallery/06-thumb.jpg" alt="子靖與勤萱婚紗照" width="1200" height="800" loading="lazy" decoding="async"><span class="photo-index">06</span>
         </button>
 
         <div class="portrait-pair">
           <button class="gallery-media portrait reveal" type="button" data-gallery-index="6" aria-label="開啟婚紗相簿第 7 張照片">
-            <img src="assets/gallery/07-thumb.jpg" alt="子靖與勤萱婚紗照 7" width="939" height="1200" loading="lazy" decoding="async"><span class="photo-index">07</span>
+            <img src="assets/gallery/07-thumb.jpg" alt="子靖與勤萱婚紗照" width="939" height="1200" loading="lazy" decoding="async"><span class="photo-index">07</span>
           </button>
           <button class="gallery-media portrait reveal" type="button" data-gallery-index="7" aria-label="開啟婚紗相簿第 8 張照片">
-            <img src="assets/gallery/08-thumb.jpg" alt="子靖與勤萱婚紗照 8" width="941" height="1200" loading="lazy" decoding="async"><span class="photo-index">08</span>
+            <img src="assets/gallery/08-thumb.jpg" alt="子靖與勤萱婚紗照" width="941" height="1200" loading="lazy" decoding="async"><span class="photo-index">08</span>
           </button>
         </div>
 
         <div class="story-pair final-pair">
           <button class="gallery-media portrait reveal" type="button" data-gallery-index="8" aria-label="開啟婚紗相簿第 9 張照片">
-            <img src="assets/gallery/09-thumb.jpg" alt="子靖與勤萱婚紗照 9" width="935" height="1200" loading="lazy" decoding="async"><span class="photo-index">09</span>
+            <img src="assets/gallery/09-thumb.jpg" alt="子靖與勤萱婚紗照" width="935" height="1200" loading="lazy" decoding="async"><span class="photo-index">09</span>
           </button>
           <button class="gallery-media landscape reveal" type="button" data-gallery-index="9" aria-label="開啟婚紗相簿第 10 張照片">
-            <img src="assets/gallery/10-thumb.jpg" alt="子靖與勤萱婚紗照 10" width="1200" height="800" loading="lazy" decoding="async"><span class="photo-index">10</span>
+            <img src="assets/gallery/10-thumb.jpg" alt="子靖與勤萱婚紗照" width="1200" height="800" loading="lazy" decoding="async"><span class="photo-index">10</span>
           </button>
         </div>
 
         <button class="gallery-media story-finale reveal" type="button" data-gallery-index="10" aria-label="開啟婚紗相簿第 11 張照片">
-          <img src="assets/gallery/11-thumb.jpg" alt="子靖與勤萱婚紗照 11" width="1200" height="799" loading="lazy" decoding="async"><span class="photo-index">11</span>
+          <img src="assets/gallery/11-thumb.jpg" alt="子靖與勤萱婚紗照" width="1200" height="799" loading="lazy" decoding="async"><span class="photo-index">11</span>
         </button>
       </div>
     </section>
 
-    <section class="page-section soft-blue" id="share" data-invite="section:share">
+    <section class="page-section soft-blue" id="share" aria-labelledby="share-title" data-invite="section:share">
       <div class="shell share-shell">
         <article class="glass-card share-card reveal">
           <div class="share-mark" aria-hidden="true"><span></span></div>
           <header class="share-heading">
             <p>PHOTO SHARING</p>
-            <h2>分享婚宴中的美好時刻</h2>
+            <h2 id="share-title">分享婚宴中的美好時刻</h2>
             <p class="share-intro">如果您在婚宴當天拍下了照片或影片，<br>歡迎上傳到我們的共同相簿，<br>一起收藏這份珍貴回憶。</p>
           </header>
 
@@ -602,28 +605,28 @@
       </div>
     </section>
 
-    <section class="page-section faq-section" id="faq" data-invite="section:faq">
+    <section class="page-section faq-section" id="faq" aria-labelledby="faq-title" data-invite="section:faq">
       <div class="shell faq-shell">
         <header class="section-title reveal">
           <p>QUESTIONS & ANSWERS</p>
-          <h2>常見問題</h2>
+          <h2 id="faq-title">常見問題</h2>
         </header>
         <div class="faq-list reveal">
           <details>
-            <summary>婚禮幾點開放入場？<span aria-hidden="true"></span></summary>
-            <p>13:30 開放入場，婚禮將於 14:00 開始，建議預留交通與入場時間。</p>
+            <summary aria-expanded="false" aria-controls="faq-answer-1"><span class="faq-question" role="heading" aria-level="3">婚禮幾點開放入場？</span><span class="faq-toggle-icon" aria-hidden="true"></span></summary>
+            <p id="faq-answer-1">13:30 開放入場，婚禮將於 14:00 開始，建議預留交通與入場時間。</p>
           </details>
           <details>
-            <summary>婚禮場地位於哪裡？<span aria-hidden="true"></span></summary>
-            <p>婚禮位於耶和華見證人王國聚會所－竹東會眾，會場在 2 樓。</p>
+            <summary aria-expanded="false" aria-controls="faq-answer-2"><span class="faq-question" role="heading" aria-level="3">婚禮場地位於哪裡？</span><span class="faq-toggle-icon" aria-hidden="true"></span></summary>
+            <p id="faq-answer-2">婚禮位於耶和華見證人王國聚會所－竹東會眾，會場在 2 樓。</p>
           </details>
           <details data-invite="content:banquet-faq">
-            <summary>婚宴幾點開始？<span aria-hidden="true"></span></summary>
-            <p>17:00 開放入場，宴席將於 18:00 正式開始。</p>
+            <summary aria-expanded="false" aria-controls="faq-answer-3"><span class="faq-question" role="heading" aria-level="3">婚宴幾點開始？</span><span class="faq-toggle-icon" aria-hidden="true"></span></summary>
+            <p id="faq-answer-3">17:00 開放入場，宴席將於 18:00 正式開始。</p>
           </details>
           <details data-invite="content:banquet-faq">
-            <summary>婚宴停車如何辦理消磁？<span aria-hidden="true"></span></summary>
-            <p>地下停車場由服務人員至桌邊協助；戶外停車場請於離場前至櫃檯報車號。</p>
+            <summary aria-expanded="false" aria-controls="faq-answer-4"><span class="faq-question" role="heading" aria-level="3">婚宴停車如何辦理消磁？</span><span class="faq-toggle-icon" aria-hidden="true"></span></summary>
+            <p id="faq-answer-4">地下停車場由服務人員至桌邊協助；戶外停車場請於離場前至櫃檯報車號。</p>
           </details>
         </div>
       </div>

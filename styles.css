@@ -1,7 +1,7 @@
 :root {
   --color-background: #f7f4ed;
   --color-text: #102740;
-  --color-accent: #b09262;
+  --color-accent: #80643d;
   --color-muted: #607083;
   --radius-card-large: 32px;
   --radius-card-small: 24px;
@@ -15,8 +15,8 @@
   --font-eyebrow: clamp(9px, 1vw, 11px);
   --font-section-title: clamp(36px, 5.5vw, 60px);
   --font-card-title: clamp(23px, 3vw, 34px);
-  --font-body-size: clamp(15px, 1.4vw, 16px);
-  --font-note: clamp(12px, 1.1vw, 13px);
+  --font-body-size: clamp(16px, 1.4vw, 17px);
+  --font-note: 14px;
   --font-button: clamp(14px, 1.2vw, 15px);
   --font-title: "Noto Serif TC", serif;
   --font-body: "Taipei Sans TC", "Taipei Sans TC Beta", "Noto Sans TC", sans-serif;
@@ -46,7 +46,7 @@ body.invite-missing > :not(.invite-gate) { display: none !important; }
 a { color: inherit; }
 img { display: block; width: 100%; }
 button { font: inherit; }
-:where(a, button, input, summary):focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; box-shadow: 0 0 0 3px rgba(247,244,237,.9); }
 .shell { width: min(1100px, calc(100% - 40px)); margin-inline: auto; }
 .scroll-progress { position: fixed; z-index: 1001; top: 0; left: 0; width: 0; height: 2px; background: var(--color-accent); box-shadow: 0 0 8px rgba(176,146,98,.28); pointer-events: none; }
 .skip-link { position: fixed; z-index: 1000; left: 16px; top: -100px; padding: 10px 16px; color: var(--navy); background: white; border-radius: 8px; }
@@ -56,16 +56,16 @@ body.invite-missing .invite-gate { display: grid; }
 .landing-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; animation: landing-image-in .45s ease-out both; }
 .landing-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(20,20,20,.25), rgba(20,20,20,.45)); }
 .landing-brand { position: absolute; z-index: 2; top: 24px; left: max(24px, calc((100% - 1100px) / 2)); color: white; font-size: 19px; font-weight: 300; letter-spacing: .14em; text-decoration: none; text-shadow: 0 1px 10px rgba(0,0,0,.25); animation: landing-content-in .45s .15s ease-out both; }
-.landing-brand span, .landing-content h1 span { color: #c9a96a; font-style: italic; }
+.landing-brand span, .landing-title span { color: #c9a96a; font-style: italic; }
 .landing-content { position: relative; z-index: 1; width: min(680px, 100%); text-align: center; text-shadow: 0 2px 18px rgba(0,0,0,.22); }
-.landing-content h1 { margin: 0; font-size: clamp(45px,7vw,76px); font-weight: 400; line-height: 1.2; letter-spacing: .1em; animation: landing-content-in .5s .2s ease-out both; }
+.landing-title { margin: 0; font-size: clamp(45px,7vw,76px); font-weight: 400; line-height: 1.2; letter-spacing: .1em; animation: landing-content-in .5s .2s ease-out both; }
 .landing-kicker { margin: 17px 0 0; font-size: clamp(16px,2vw,20px); font-style: italic; letter-spacing: .14em; animation: landing-content-in .45s .35s ease-out both; }
 .landing-date { margin: 10px 0 0; font-size: 14px; letter-spacing: .26em; animation: landing-content-in .45s .42s ease-out both; }
 .landing-line { width: 58px; height: 1px; margin: 28px auto; background: var(--gold-light); animation: landing-content-in .45s .48s ease-out both; }
 .landing-message { animation: landing-content-in .5s .55s ease-out both; }
 .landing-message p { margin: 0 0 10px; line-height: 1.9; letter-spacing: .06em; }
 .landing-message p:nth-child(2) { color: rgba(255,255,255,.82); font-size: 14px; }
-.landing-message p:last-child { margin-top: 17px; color: var(--gold-light); font-size: 13px; font-style: italic; letter-spacing: .08em; }
+.landing-message p:last-child { margin-top: 17px; color: var(--gold-light); font-size: 14px; font-style: italic; letter-spacing: .08em; }
 .landing-help-button { width: 220px; min-height: 48px; margin-top: 24px; padding: 13px 22px; color: white; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.55); border-radius: var(--radius-button); box-shadow: var(--shadow-card); cursor: pointer; transition: background var(--transition-base) ease, border-color var(--transition-base) ease; animation: landing-content-in .45s .68s ease-out both; }
 .landing-help-button:hover { background: rgba(255,255,255,.14); border-color: var(--gold-light); }
 @keyframes landing-image-in { from { opacity: 0; } to { opacity: 1; } }
@@ -166,6 +166,7 @@ body.invite-missing .invite-gate { display: grid; }
 .rsvp-field { margin-bottom: 25px; }
 .rsvp-field label, .rsvp-question legend { display: block; margin-bottom: 9px; color: var(--navy); font-weight: 500; }
 .rsvp-field label span { color: var(--gold); }
+.rsvp-question legend > span { color: var(--gold); }
 .rsvp-field input, .rsvp-field textarea { width: 100%; padding: 14px 17px; color: var(--navy); background: rgba(255,255,255,.86); border: 1px solid var(--line); border-radius: 16px; outline: none; font: inherit; transition: border-color var(--transition-base) ease, box-shadow var(--transition-base) ease; }
 .rsvp-field input { min-height: 52px; }
 .rsvp-field textarea { resize: vertical; line-height: 1.7; }
@@ -185,7 +186,7 @@ body.invite-missing .invite-gate { display: grid; }
 .rsvp-counter span { display: block; font-weight: 500; }
 .rsvp-counter small { display: block; margin-top: 3px; color: var(--navy-muted); font-size: var(--font-note); }
 .counter-control { display: grid; grid-template-columns: 42px 38px 42px; align-items: center; }
-.counter-control button { width: 42px; height: 42px; color: var(--navy); background: white; border: 1px solid var(--line); border-radius: 50%; cursor: pointer; font-size: 20px; transition: color var(--transition-base), background var(--transition-base), border-color var(--transition-base); }
+.counter-control button { width: 44px; height: 44px; color: var(--navy); background: white; border: 1px solid var(--line); border-radius: 50%; cursor: pointer; font-size: 20px; transition: color var(--transition-base), background var(--transition-base), border-color var(--transition-base); }
 .counter-control button:hover { color: white; background: var(--gold); border-color: var(--gold); }
 .counter-control button:disabled { opacity: .35; cursor: default; }
 .counter-control output { text-align: center; font-weight: 600; }
@@ -210,9 +211,9 @@ body.invite-missing .invite-gate { display: grid; }
 .couple-name i { color: var(--gold); font-style: italic; }
 .wedding-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--content-gap); }
 .fact-card { min-height: 270px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: var(--card-padding-small); border-color: rgba(176,146,98,.3); border-radius: var(--radius-card-small); }
-.fact-card > p { margin: 24px 0 8px; color: var(--navy-muted); font-size: 13px; font-weight: 600; letter-spacing: .08em; }
+.fact-card > p { margin: 24px 0 8px; color: var(--navy-muted); font-size: 14px; font-weight: 600; letter-spacing: .08em; }
 .fact-card strong, .fact-card time { display: block; color: var(--navy); font-size: clamp(22px, 2.2vw, 30px); font-weight: 400; line-height: 1.35; }
-.fact-card > span:last-child { margin-top: 7px; color: var(--gold); font-size: 12px; letter-spacing: .14em; }
+.fact-card > span:last-child { margin-top: 7px; color: var(--gold); font-size: 14px; letter-spacing: .14em; }
 .line-icon { position: relative; display: block; width: 34px; height: 34px; color: var(--gold); border: 1px solid currentColor; }
 .calendar-icon { border-radius: 7px; }
 .calendar-icon::before { content: ""; position: absolute; top: 8px; left: 0; width: 100%; border-top: 1px solid currentColor; }
@@ -244,7 +245,7 @@ body.invite-missing .invite-gate { display: grid; }
 .ceremony-note { min-height: 270px; padding: 38px; border-color: rgba(176,146,98,.25); }
 .ceremony-note > span { color: var(--gold); font-size: 13px; letter-spacing: .14em; }
 .ceremony-note h3 { margin: 38px 0 10px; font-size: 23px; font-weight: 400; }
-.ceremony-note p { margin: 0; color: var(--navy-muted); font-size: 14px; }
+.ceremony-note p { margin: 0; color: var(--navy-muted); font-size: var(--font-body-size); }
 
 .ceremony-parking-section { background: linear-gradient(180deg, var(--ivory) 0%, #f1ece2 100%); }
 .ceremony-parking-shell { max-width: 1100px; }
@@ -306,7 +307,7 @@ body.invite-missing .invite-gate { display: grid; }
 .seat-search input { width: 100%; height: 60px; padding: 0 24px 0 59px; color: var(--navy); background: white; border: 1px solid rgba(16,39,64,.1); border-radius: var(--radius-button); box-shadow: var(--shadow-card); outline: none; font: inherit; transition: border-color var(--transition-base) ease, box-shadow var(--transition-base) ease; }
 .seat-search input::placeholder { color: rgba(96,112,131,.7); }
 .seat-search input:focus { border-color: var(--gold); box-shadow: 0 15px 38px rgba(27,39,52,.11), 0 0 0 4px rgba(176,146,98,.11); }
-.lookup-hint { min-height: 22px; margin: 10px 0 4px; color: var(--gold); font-size: 13px; opacity: 0; transform: translateY(-4px); transition: opacity .3s ease, transform .3s ease; }
+.lookup-hint { min-height: 22px; margin: 10px 0 4px; color: var(--gold); font-size: 14px; opacity: 0; transform: translateY(-4px); transition: opacity .3s ease, transform .3s ease; }
 .lookup-hint.show { opacity: 1; transform: none; }
 .lookup-button { min-width: 142px; height: 50px; justify-content: center; margin-top: 13px; border: 0; cursor: pointer; }
 .lookup-button:disabled { cursor: wait; opacity: .88; }
@@ -329,7 +330,7 @@ body.invite-missing .invite-gate { display: grid; }
 .result-rule { width: 70px; height: 1px; margin: 32px auto; background: var(--gold); }
 .guest-count { margin: 0; color: var(--navy); font-size: clamp(19px, 2.5vw, 24px); letter-spacing: .08em; }
 .result-closing { margin: 27px 0 0; color: var(--navy-muted); font-size: 14px; letter-spacing: .08em; }
-.special-meal { margin: 17px 0 0; color: var(--gold); font-size: 13px; letter-spacing: .05em; }
+.special-meal { margin: 17px 0 0; color: var(--gold); font-size: 14px; letter-spacing: .05em; }
 @keyframes lookup-spin { to { transform: rotate(360deg); } }
 @keyframes result-in { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
@@ -362,7 +363,7 @@ body.invite-missing .invite-gate { display: grid; }
 body.lightbox-open { overflow: hidden; }
 .lightbox-stage { min-width: 0; height: calc(100vh - 100px); height: calc(100svh - 100px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
 .lightbox-image { display: block; max-width: 100%; max-height: calc(100% - 32px); width: auto; height: auto; object-fit: contain; box-shadow: 0 24px 70px rgba(0,0,0,.3); animation: lightbox-image-in .35s ease-out both; }
-.lightbox-counter { margin: 0; color: rgba(255,255,255,.62); font-size: 12px; letter-spacing: .18em; }
+.lightbox-counter { margin: 0; color: rgba(255,255,255,.72); font-size: 14px; letter-spacing: .18em; }
 .lightbox-close, .lightbox-nav { color: white; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 50%; cursor: pointer; transition: background .25s, opacity .25s; }
 .lightbox-close:hover, .lightbox-nav:hover { background: rgba(255,255,255,.16); }
 .lightbox-close { position: absolute; z-index: 2; top: 22px; right: 22px; width: 46px; height: 46px; font-size: 26px; font-weight: 200; }
@@ -374,6 +375,7 @@ body.lightbox-open { overflow: hidden; }
 .lightbox.closing .lightbox-image { animation: lightbox-image-out .25s ease-in both; }
 @keyframes lightbox-out { to { opacity: 0; } }
 @keyframes lightbox-image-out { to { opacity: 0; transform: scale(.97); } }
+
 .share-shell { max-width: 1040px; }
 .share-card { min-height: 650px; padding: 70px 7%; text-align: center; border-color: rgba(176,146,98,.3); }
 .share-mark { display: grid; place-items: center; width: 58px; height: 58px; margin: 0 auto 28px; color: var(--gold); border: 1px solid currentColor; border-radius: 50%; }
@@ -386,9 +388,9 @@ body.lightbox-open { overflow: hidden; }
 .share-step { padding: 27px 20px; }
 .share-step + .share-step { border-left: 1px solid rgba(176,146,98,.3); }
 .share-step span { display: block; margin-bottom: 5px; color: var(--gold); font-size: 13px; letter-spacing: .12em; }
-.share-step p { margin: 0; color: var(--navy); font-size: 14px; }
+.share-step p { margin: 0; color: var(--navy); font-size: var(--font-body-size); }
 .share-button { min-width: 174px; justify-content: center; }
-.share-note { margin: 23px 0 0; color: var(--navy-muted); font-size: 12px; line-height: 1.8; }
+.share-note { margin: 23px 0 0; color: var(--navy-muted); font-size: 14px; line-height: 1.8; }
 
 .faq-section { background: var(--ivory); }
 .faq-shell { max-width: 850px; }
@@ -396,9 +398,9 @@ body.lightbox-open { overflow: hidden; }
 .faq-list details { border-bottom: 1px solid var(--line); }
 .faq-list summary { position: relative; padding: 24px 48px 24px 0; cursor: pointer; list-style: none; font-size: clamp(16px, 1.8vw, 18px); font-weight: 600; }
 .faq-list summary::-webkit-details-marker { display: none; }
-.faq-list summary span::before, .faq-list summary span::after { content: ""; position: absolute; top: 35px; right: 8px; width: 14px; height: 1px; background: var(--gold); transition: transform .25s ease; }
-.faq-list summary span::after { transform: rotate(90deg); }
-.faq-list details[open] summary span::after { transform: rotate(0); }
+.faq-list summary .faq-toggle-icon::before, .faq-list summary .faq-toggle-icon::after { content: ""; position: absolute; top: 35px; right: 8px; width: 14px; height: 1px; background: var(--gold); transition: transform .25s ease; }
+.faq-list summary .faq-toggle-icon::after { transform: rotate(90deg); }
+.faq-list details[open] summary .faq-toggle-icon::after { transform: rotate(0); }
 .faq-list details > p { margin: -4px 0 25px; padding-right: 42px; color: var(--navy-muted); }
 
 /* Shared visual system */
@@ -431,7 +433,7 @@ body.lightbox-open { overflow: hidden; }
 
 :where(
   .landing-brand,
-  .landing-content h1,
+  .landing-title,
   .landing-dialog-card h2,
   .brand,
   .hero h1,
@@ -502,7 +504,7 @@ footer small { color: rgba(255,255,255,.5); letter-spacing: .12em; }
   .invite-gate { padding: 120px 22px 80px; }
   .landing-image { object-position: 52% 42%; }
   .landing-brand { top: 21px; left: 20px; font-size: 16px; letter-spacing: .1em; }
-  .landing-content h1 { font-size: clamp(40px,12vw,54px); letter-spacing: .06em; }
+  .landing-title { font-size: clamp(40px,12vw,54px); letter-spacing: .06em; }
   .landing-kicker { letter-spacing: .12em; }
   .landing-message p { letter-spacing: .08em; }
   .landing-help-button { width: 220px; margin-top: 30px; }
