@@ -401,13 +401,23 @@ function createRsvpSubmissionId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
-function cleanupRsvpJsonpRequest(callbackName) {
+function cleanupRsvpJsonpRequest(callbackName, absorbLateResponse = false) {
   const request = activeRsvpJsonpRequests.get(callbackName);
   if (!request) return;
   window.clearTimeout(request.cleanupTimer);
   request.script.remove();
-  delete window[callbackName];
   activeRsvpJsonpRequests.delete(callbackName);
+
+  if (!absorbLateResponse) {
+    delete window[callbackName];
+    return;
+  }
+
+  const retiredCallback = () => {};
+  window[callbackName] = retiredCallback;
+  window.setTimeout(() => {
+    if (window[callbackName] === retiredCallback) delete window[callbackName];
+  }, 6000);
 }
 
 function stopRsvpStatusPolling() {
@@ -419,7 +429,9 @@ function stopRsvpStatusPolling() {
     window.clearTimeout(rsvpStatusTimeout);
     rsvpStatusTimeout = null;
   }
-  [...activeRsvpJsonpRequests.keys()].forEach(cleanupRsvpJsonpRequest);
+  [...activeRsvpJsonpRequests.keys()].forEach((callbackName) => {
+    cleanupRsvpJsonpRequest(callbackName, true);
+  });
 }
 
 function finishRsvpWithError(message) {
