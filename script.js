@@ -999,6 +999,7 @@ document.querySelectorAll('.image-shell img').forEach((image) => {
 
 const galleryButtons = [...document.querySelectorAll('[data-gallery-index]')];
 const lightbox = document.querySelector('#gallery-lightbox');
+const lightboxStage = lightbox.querySelector('.lightbox-stage');
 const lightboxImage = lightbox.querySelector('.lightbox-image');
 const lightboxCounter = lightbox.querySelector('.lightbox-counter');
 const lightboxClose = lightbox.querySelector('.lightbox-close');
@@ -1018,11 +1019,23 @@ const galleryImages = [
   { src: 'assets/gallery/11.jpg', width: 1622, height: 1080 }
 ];
 const gallerySequence = galleryButtons.map((button) => Number(button.dataset.galleryIndex));
+const galleryImagePreloads = new Map();
 let currentGalleryIndex = 0;
+let requestedGalleryIndex = 0;
 let lastGalleryTrigger;
-let touchStartX = 0;
 let lightboxScrollY = 0;
-let lightboxCloseTimer;
+let lightboxImageRequestToken = 0;
+let isLightboxOpening = false;
+let lightboxBodyInlineStyles = null;
+const LIGHTBOX_SWIPE_DISTANCE = 40;
+const LIGHTBOX_SWIPE_VELOCITY = 0.45;
+const LIGHTBOX_SWIPE_AXIS_RATIO = 1.2;
+const LIGHTBOX_SWIPE_AXIS_SLOP = 6;
+const LIGHTBOX_SWIPE_FOLLOW_FACTOR = 0.35;
+const LIGHTBOX_SWIPE_FOLLOW_LIMIT = 72;
+let lightboxGesture = null;
+let suppressLightboxClick = false;
+let suppressLightboxClickTimer = null;
 
 const weddingCarousel = document.querySelector('.wedding-carousel');
 const carouselViewport = weddingCarousel?.querySelector('.wedding-carousel__viewport');
@@ -1405,31 +1418,164 @@ function initializeViewportAnimations() {
 
 initializeViewportAnimations();
 
+function normalizeGalleryIndex(index) {
+  return (index + galleryImages.length) % galleryImages.length;
+}
+
+function preloadGalleryImage(index) {
+  const normalizedIndex = normalizeGalleryIndex(index);
+  if (galleryImagePreloads.has(normalizedIndex)) return galleryImagePreloads.get(normalizedIndex);
+
+  const imageData = galleryImages[normalizedIndex];
+  const preloadPromise = new Promise((resolve, reject) => {
+    const preloader = new Image();
+    preloader.decoding = 'async';
+    preloader.onload = async () => {
+      try {
+        await preloader.decode?.();
+      } catch {
+        // The load event already confirms a usable decoded resource on older Safari versions.
+      }
+      resolve(normalizedIndex);
+    };
+    preloader.onerror = reject;
+    preloader.src = imageData.src;
+  }).catch((error) => {
+    galleryImagePreloads.delete(normalizedIndex);
+    throw error;
+  });
+
+  galleryImagePreloads.set(normalizedIndex, preloadPromise);
+  return preloadPromise;
+}
+
+function gallerySequenceIndex(index, step) {
+  const currentPosition = gallerySequence.indexOf(normalizeGalleryIndex(index));
+  const safePosition = currentPosition < 0 ? 0 : currentPosition;
+  const nextPosition = (safePosition + step + gallerySequence.length) % gallerySequence.length;
+  return gallerySequence[nextPosition];
+}
+
+function preloadAdjacentGalleryImages(index) {
+  [-1, 1].forEach((step) => {
+    preloadGalleryImage(gallerySequenceIndex(index, step)).catch(() => {
+      // Keep the current decoded image visible if an adjacent resource cannot be preloaded.
+    });
+  });
+}
+
 function showGalleryImage(index) {
-  currentGalleryIndex = (index + galleryImages.length) % galleryImages.length;
+  currentGalleryIndex = normalizeGalleryIndex(index);
+  requestedGalleryIndex = currentGalleryIndex;
   const image = galleryImages[currentGalleryIndex];
   lightboxImage.width = image.width;
   lightboxImage.height = image.height;
+  lightboxImage.style.transform = '';
   lightboxImage.src = image.src;
   lightboxImage.alt = '子靖與勤萱婚紗照';
   lightboxCounter.textContent = `${String(currentGalleryIndex + 1).padStart(2, '0')} / ${galleryImages.length}`;
-  if (!lightbox.hidden && !reducedMotionQuery.matches) {
-    lightboxImage.classList.remove('switching');
-    void lightboxImage.offsetWidth;
-    lightboxImage.classList.add('switching');
-  } else {
-    lightboxImage.classList.remove('switching');
+  preloadAdjacentGalleryImages(currentGalleryIndex);
+}
+
+async function requestLightboxImage(index) {
+  const normalizedIndex = normalizeGalleryIndex(index);
+  const requestToken = ++lightboxImageRequestToken;
+  requestedGalleryIndex = normalizedIndex;
+  try {
+    await preloadGalleryImage(normalizedIndex);
+  } catch {
+    return false;
   }
+  if (requestToken !== lightboxImageRequestToken || lightbox.hidden) return false;
+  showGalleryImage(normalizedIndex);
+  return true;
 }
 
 function showAdjacentGalleryImage(step) {
-  const currentPosition = gallerySequence.indexOf(currentGalleryIndex);
-  const nextPosition = (currentPosition + step + gallerySequence.length) % gallerySequence.length;
-  showGalleryImage(gallerySequence[nextPosition]);
+  requestLightboxImage(gallerySequenceIndex(requestedGalleryIndex, step));
 }
 
-function openLightbox(index, trigger) {
-  window.clearTimeout(lightboxCloseTimer);
+function lightboxGesturePoint(clientX, clientY) {
+  return { clientX, clientY };
+}
+
+function beginLightboxGesture(point, source, pointerId = null) {
+  if (lightbox.hidden || isLightboxClosing || isLightboxOpening) return;
+  window.clearTimeout(suppressLightboxClickTimer);
+  suppressLightboxClick = false;
+  lightboxGesture = {
+    source,
+    pointerId,
+    startX: point.clientX,
+    startY: point.clientY,
+    currentX: point.clientX,
+    currentY: point.clientY,
+    startTime: Date.now(),
+    axis: null
+  };
+  lightboxImage.style.transform = '';
+}
+
+function updateLightboxGesture(point, event) {
+  if (!lightboxGesture) return;
+  lightboxGesture.currentX = point.clientX;
+  lightboxGesture.currentY = point.clientY;
+  const distanceX = lightboxGesture.currentX - lightboxGesture.startX;
+  const distanceY = lightboxGesture.currentY - lightboxGesture.startY;
+  const absoluteX = Math.abs(distanceX);
+  const absoluteY = Math.abs(distanceY);
+
+  if (!lightboxGesture.axis && Math.max(absoluteX, absoluteY) >= LIGHTBOX_SWIPE_AXIS_SLOP) {
+    if (absoluteX > absoluteY * LIGHTBOX_SWIPE_AXIS_RATIO) lightboxGesture.axis = 'horizontal';
+    else if (absoluteY > absoluteX * LIGHTBOX_SWIPE_AXIS_RATIO) lightboxGesture.axis = 'vertical';
+  }
+
+  if (lightboxGesture.axis !== 'horizontal') return;
+  if (event.cancelable) event.preventDefault();
+  const followDistance = Math.max(
+    -LIGHTBOX_SWIPE_FOLLOW_LIMIT,
+    Math.min(LIGHTBOX_SWIPE_FOLLOW_LIMIT, distanceX * LIGHTBOX_SWIPE_FOLLOW_FACTOR)
+  );
+  lightboxImage.style.transform = `translate3d(${followDistance}px, 0, 0)`;
+  suppressLightboxClick = true;
+}
+
+function finishLightboxGesture(point, cancelled = false) {
+  if (!lightboxGesture) return;
+  const gesture = lightboxGesture;
+  lightboxGesture = null;
+  const currentPoint = point ?? lightboxGesturePoint(gesture.currentX, gesture.currentY);
+  const distanceX = currentPoint.clientX - gesture.startX;
+  const distanceY = currentPoint.clientY - gesture.startY;
+  const elapsed = Date.now() - gesture.startTime;
+  const velocityX = Math.abs(distanceX) / Math.max(elapsed, 1);
+  const isHorizontal = gesture.axis === 'horizontal'
+    || Math.abs(distanceX) > Math.abs(distanceY) * LIGHTBOX_SWIPE_AXIS_RATIO;
+  const shouldChange = Math.abs(distanceX) >= LIGHTBOX_SWIPE_DISTANCE
+    || velocityX > LIGHTBOX_SWIPE_VELOCITY;
+
+  lightboxImage.style.transform = '';
+  if (isHorizontal) {
+    suppressLightboxClick = true;
+    window.clearTimeout(suppressLightboxClickTimer);
+    suppressLightboxClickTimer = window.setTimeout(() => {
+      suppressLightboxClick = false;
+    }, 400);
+  }
+  if (!cancelled && isHorizontal && shouldChange) {
+    showAdjacentGalleryImage(distanceX < 0 ? 1 : -1);
+  }
+}
+
+function cancelLightboxGesture() {
+  finishLightboxGesture(null, true);
+}
+
+async function openLightbox(index, trigger) {
+  if (!lightbox.hidden || isLightboxOpening) return;
+  const normalizedIndex = normalizeGalleryIndex(index);
+  const requestToken = ++lightboxImageRequestToken;
+  isLightboxOpening = true;
   lastGalleryTrigger = trigger;
   isLightboxClosing = false;
   isRestoringScroll = false;
@@ -1442,9 +1588,23 @@ function openLightbox(index, trigger) {
   } : null;
   window.clearTimeout(carouselAutoplayTimer);
   carouselAutoplayTimer = null;
-  showGalleryImage(index);
-  lightbox.classList.remove('closing');
-  lightbox.hidden = false;
+
+  try {
+    await preloadGalleryImage(normalizedIndex);
+  } catch {
+    const autoplayWasScheduled = lightboxCarouselState?.autoplayWasScheduled;
+    lightboxCarouselState = null;
+    isLightboxOpening = false;
+    if (autoplayWasScheduled) scheduleCarouselAutoplay();
+    return;
+  }
+  if (requestToken !== lightboxImageRequestToken) {
+    lightboxCarouselState = null;
+    isLightboxOpening = false;
+    return;
+  }
+
+  showGalleryImage(normalizedIndex);
   lightboxScrollY = window.scrollY;
   lightboxScrollX = window.scrollX;
   debugCarouselLifecycle('lightbox open', {
@@ -1452,13 +1612,29 @@ function openLightbox(index, trigger) {
     savedScrollY: lightboxScrollY,
     activeIndex: carouselActiveIndex
   });
+  const bodyStyle = document.body.style;
+  lightboxBodyInlineStyles = {
+    position: bodyStyle.position,
+    top: bodyStyle.top,
+    left: bodyStyle.left,
+    width: bodyStyle.width,
+    overflow: bodyStyle.overflow,
+    paddingRight: bodyStyle.paddingRight
+  };
+  const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  if (scrollbarWidth) {
+    const currentPaddingRight = Number.parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
+    bodyStyle.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
+  }
   document.documentElement.classList.add('lightbox-open');
   document.body.classList.add('lightbox-open');
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${lightboxScrollY}px`;
-  document.body.style.left = `-${lightboxScrollX}px`;
-  document.body.style.width = '100%';
-  document.body.style.overflow = 'hidden';
+  bodyStyle.position = 'fixed';
+  bodyStyle.top = `-${lightboxScrollY}px`;
+  bodyStyle.left = `-${lightboxScrollX}px`;
+  bodyStyle.width = '100%';
+  bodyStyle.overflow = 'hidden';
+  lightbox.hidden = false;
+  isLightboxOpening = false;
   lightboxClose.focus();
 }
 
@@ -1514,18 +1690,22 @@ function restorePagePositionAfterLightbox() {
 }
 
 function finishClosingLightbox() {
+  cancelLightboxGesture();
+  lightboxImage.style.transform = '';
   lightbox.hidden = true;
-  lightbox.classList.remove('closing');
   lightboxImage.removeAttribute('src');
   const lockedBodyTop = document.body.style.top;
   const lockedBodyLeft = document.body.style.left;
   document.documentElement.classList.remove('lightbox-open');
   document.body.classList.remove('lightbox-open');
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.width = '';
-  document.body.style.overflow = '';
+  const bodyStyle = document.body.style;
+  bodyStyle.position = lightboxBodyInlineStyles?.position ?? '';
+  bodyStyle.top = lightboxBodyInlineStyles?.top ?? '';
+  bodyStyle.left = lightboxBodyInlineStyles?.left ?? '';
+  bodyStyle.width = lightboxBodyInlineStyles?.width ?? '';
+  bodyStyle.overflow = lightboxBodyInlineStyles?.overflow ?? '';
+  bodyStyle.paddingRight = lightboxBodyInlineStyles?.paddingRight ?? '';
+  lightboxBodyInlineStyles = null;
   debugCarouselLifecycle('lightbox scroll lock cleared', {
     bodyTop: lockedBodyTop,
     bodyLeft: lockedBodyLeft
@@ -1534,16 +1714,16 @@ function finishClosingLightbox() {
 }
 
 function closeLightbox() {
-  if (lightbox.hidden || lightbox.classList.contains('closing')) return;
+  if (lightbox.hidden || isLightboxClosing) return;
   isLightboxClosing = true;
   isRestoringScroll = true;
+  lightboxImageRequestToken += 1;
   debugCarouselLifecycle('lightbox close start', {
     savedScrollY: lightboxScrollY,
     bodyTop: document.body.style.top,
     activeIndex: carouselActiveIndex
   });
-  lightbox.classList.add('closing');
-  lightboxCloseTimer = window.setTimeout(finishClosingLightbox, reducedMotionQuery.matches ? 0 : 480);
+  finishClosingLightbox();
 }
 
 galleryButtons.forEach((button) => {
@@ -1554,8 +1734,79 @@ lightboxPrev.addEventListener('click', () => showAdjacentGalleryImage(-1));
 lightboxNext.addEventListener('click', () => showAdjacentGalleryImage(1));
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (event) => {
+  if (suppressLightboxClick) {
+    event.preventDefault();
+    suppressLightboxClick = false;
+    window.clearTimeout(suppressLightboxClickTimer);
+    return;
+  }
   if (event.target === lightbox || event.target.classList.contains('lightbox-stage')) closeLightbox();
 });
+lightboxImage.addEventListener('dragstart', (event) => event.preventDefault());
+
+if ('PointerEvent' in window) {
+  lightboxStage.addEventListener('pointerdown', (event) => {
+    if (!event.isPrimary || !['touch', 'pen'].includes(event.pointerType)) return;
+    beginLightboxGesture(lightboxGesturePoint(event.clientX, event.clientY), 'pointer', event.pointerId);
+  }, { passive: true });
+
+  lightboxStage.addEventListener('pointermove', (event) => {
+    if (!lightboxGesture
+      || lightboxGesture.source !== 'pointer'
+      || lightboxGesture.pointerId !== event.pointerId) return;
+    updateLightboxGesture(lightboxGesturePoint(event.clientX, event.clientY), event);
+    if (lightboxGesture?.axis === 'horizontal' && !lightboxStage.hasPointerCapture(event.pointerId)) {
+      try {
+        lightboxStage.setPointerCapture(event.pointerId);
+      } catch {
+        // Some older mobile browsers do not allow capture after gesture recognition.
+      }
+    }
+  }, { passive: false });
+
+  lightboxStage.addEventListener('pointerup', (event) => {
+    if (!lightboxGesture
+      || lightboxGesture.source !== 'pointer'
+      || lightboxGesture.pointerId !== event.pointerId) return;
+    finishLightboxGesture(lightboxGesturePoint(event.clientX, event.clientY));
+  }, { passive: true });
+
+  lightboxStage.addEventListener('pointercancel', (event) => {
+    if (!lightboxGesture
+      || lightboxGesture.source !== 'pointer'
+      || lightboxGesture.pointerId !== event.pointerId) return;
+    cancelLightboxGesture();
+  }, { passive: true });
+} else {
+  const findGestureTouch = (touchList) => Array.from(touchList).find(
+    (touch) => touch.identifier === lightboxGesture?.pointerId
+  );
+
+  lightboxStage.addEventListener('touchstart', (event) => {
+    if (event.touches.length !== 1) {
+      cancelLightboxGesture();
+      return;
+    }
+    const touch = event.touches[0];
+    beginLightboxGesture(lightboxGesturePoint(touch.clientX, touch.clientY), 'touch', touch.identifier);
+  }, { passive: true });
+
+  lightboxStage.addEventListener('touchmove', (event) => {
+    if (!lightboxGesture || lightboxGesture.source !== 'touch') return;
+    const touch = findGestureTouch(event.touches);
+    if (!touch) return;
+    updateLightboxGesture(lightboxGesturePoint(touch.clientX, touch.clientY), event);
+  }, { passive: false });
+
+  lightboxStage.addEventListener('touchend', (event) => {
+    if (!lightboxGesture || lightboxGesture.source !== 'touch') return;
+    const touch = findGestureTouch(event.changedTouches);
+    if (!touch) return;
+    finishLightboxGesture(lightboxGesturePoint(touch.clientX, touch.clientY));
+  }, { passive: true });
+
+  lightboxStage.addEventListener('touchcancel', cancelLightboxGesture, { passive: true });
+}
 
 document.addEventListener('keydown', (event) => {
   if (lightbox.hidden) return;
@@ -1590,16 +1841,6 @@ document.addEventListener('keydown', (event) => {
     firstControl.focus();
   }
 });
-
-lightbox.addEventListener('touchstart', (event) => {
-  touchStartX = event.changedTouches[0].clientX;
-}, { passive: true });
-
-lightbox.addEventListener('touchend', (event) => {
-  const distance = event.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(distance) < 50) return;
-  showAdjacentGalleryImage(distance < 0 ? 1 : -1);
-}, { passive: true });
 
 if (!reducedMotionQuery.matches) {
   document.documentElement.classList.add('motion-enabled');

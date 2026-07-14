@@ -533,24 +533,24 @@ html.motion-enabled .hero-image { will-change: transform, opacity; }
 }
 
 .lightbox[hidden] { display: none; }
-.lightbox { position: fixed; z-index: 500; inset: 0; display: grid; grid-template-columns: 80px minmax(0,1fr) 80px; align-items: center; padding: 30px; color: var(--color-text-inverse); background: var(--overlay-dark); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); animation: lightbox-in 400ms var(--motion-ease) both; }
+.lightbox { position: fixed; z-index: 500; inset: 0; display: grid; grid-template-columns: 80px minmax(0,1fr) 80px; align-items: center; padding: 30px; color: var(--color-text-inverse); background: var(--overlay-dark); }
 html.lightbox-open, body.lightbox-open { overflow: hidden; }
-.lightbox-stage { min-width: 0; height: calc(100vh - 100px); height: calc(100svh - 100px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-.lightbox-image { display: block; max-width: 100%; max-height: calc(100% - 32px); width: auto; height: auto; object-fit: contain; box-shadow: var(--shadow-lg); animation: lightbox-image-in 400ms var(--motion-ease) both; }
-.lightbox-image.switching { animation: lightbox-switch-in 380ms var(--motion-ease) both; }
+.lightbox-stage { min-width: 0; height: calc(100vh - 100px); height: calc(100svh - 100px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; touch-action: pan-y; overscroll-behavior-x: none; }
+.lightbox-image { display: block; max-width: 100%; max-height: calc(100% - 32px); width: auto; height: auto; object-fit: contain; box-shadow: var(--shadow-lg); -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .lightbox-counter { margin: 0; color: var(--color-inverse-72); font-size: 14px; letter-spacing: .18em; }
-.lightbox-close, .lightbox-nav { color: var(--color-text-inverse); background: var(--color-inverse-08); border: 1px solid var(--color-inverse-16); border-radius: 50%; cursor: pointer; transition: background .25s, opacity .25s; }
+.lightbox-close, .lightbox-nav { color: var(--color-text-inverse); background: var(--color-inverse-08); border: 1px solid var(--color-inverse-16); border-radius: 50%; cursor: pointer; }
 .lightbox-close:hover, .lightbox-nav:hover { background: var(--color-inverse-16); }
 .lightbox-close { position: absolute; z-index: 2; top: 22px; right: 22px; width: 46px; height: 46px; font-size: 26px; font-weight: 200; }
 .lightbox-nav { width: 48px; height: 48px; justify-self: center; }
 .lightbox-nav span { font-size: 35px; font-weight: 300; line-height: .8; }
-@keyframes lightbox-in { from { opacity: 0; } }
-@keyframes lightbox-image-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
-@keyframes lightbox-switch-in { from { opacity: .35; } to { opacity: 1; } }
-.lightbox.closing { animation: lightbox-out 380ms var(--motion-ease) both; }
-.lightbox.closing .lightbox-image { animation: lightbox-image-out 380ms var(--motion-ease) both; }
-@keyframes lightbox-out { to { opacity: 0; } }
-@keyframes lightbox-image-out { to { opacity: 0; transform: scale(.97); } }
+
+.lightbox,
+.lightbox *,
+.lightbox-overlay,
+.lightbox-image {
+  animation: none !important;
+  transition: none !important;
+}
 
 .share-shell { max-width: 1040px; }
 .share-card { min-height: 0; padding: var(--card-padding-md); text-align: center; border: var(--card-border); border-radius: var(--card-radius-lg); }
@@ -1982,38 +1982,6 @@ html.motion-enabled .reveal.is-visible .image-shell.image-reveal-complete img {
   .nav-links > a.nav-link::after { transition-duration: 560ms; }
 }
 
-/* Lightbox opens and closes as a single restrained stage transition. */
-.lightbox {
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  animation: lightbox-in 480ms var(--motion-ease) both;
-}
-
-.lightbox-image { animation: lightbox-image-in 480ms var(--motion-ease) both; }
-.lightbox-image.switching { animation: lightbox-switch-in 420ms var(--motion-ease) both; }
-.lightbox.closing { animation: lightbox-out 480ms var(--motion-ease) both; }
-.lightbox.closing .lightbox-image { animation: lightbox-image-out 480ms var(--motion-ease) both; }
-
-@keyframes lightbox-in {
-  from { opacity: 0; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
-  to { opacity: 1; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-}
-@keyframes lightbox-image-in {
-  from { opacity: 0; transform: translateY(18px) scale(.94); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes lightbox-switch-in {
-  from { opacity: 0; transform: translateX(12px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes lightbox-out {
-  from { opacity: 1; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-  to { opacity: 0; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
-}
-@keyframes lightbox-image-out {
-  to { opacity: 0; transform: translateY(18px) scale(.94); }
-}
-
 .rsvp-success:not([hidden]) { animation: rsvp-success-ceremonial 600ms var(--motion-ease) both; }
 .rsvp-success:not([hidden]) .rsvp-success-mark { animation: rsvp-success-mark-in 560ms var(--motion-ease) 90ms backwards; }
 @keyframes rsvp-success-ceremonial {
@@ -2043,7 +2011,6 @@ html.motion-enabled .site-footer.reveal.is-visible .site-footer__meta { transiti
   html.motion-enabled .reveal.is-visible .image-shell.loaded img { animation-duration: 760ms; }
   .wedding-carousel__slide,
   .wedding-carousel__clone { filter: none; }
-  .lightbox { -webkit-backdrop-filter: none; backdrop-filter: none; }
   .nav-links.open a:nth-child(2) { transition-delay: 50ms; }
   .nav-links.open a:nth-child(3) { transition-delay: 100ms; }
   .nav-links.open a:nth-child(4) { transition-delay: 150ms; }
