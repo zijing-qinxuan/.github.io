@@ -123,10 +123,10 @@
     <section class="page-section rsvp-section" id="rsvp" aria-labelledby="rsvp-title" data-invite="section:rsvp">
       <div class="shell rsvp-shell">
         <article class="glass-card rsvp-card reveal">
-          <header class="rsvp-heading">
-            <p>RSVP</p>
-            <h2 id="rsvp-title">出席回覆</h2>
-            <p class="rsvp-intro">我們誠摯期待您的蒞臨。<br>為了讓我們能更完善地安排，<br>請花約 30 秒完成出席回覆。</p>
+          <header class="rsvp-heading section-header">
+            <p class="section-header__eyebrow">RSVP</p>
+            <h2 class="section-header__title" id="rsvp-title">出席回覆</h2>
+            <p class="rsvp-intro section-header__description">我們誠摯期待您的蒞臨。<br>為了讓我們能更完善地安排，<br>請花約 30 秒完成出席回覆。</p>
             <p class="rsvp-deadline-note">請於 <span data-rsvp-deadline></span>前完成回覆。<br>回覆後仍可使用相同姓名與聯絡電話更新資料。</p>
           </header>
 
@@ -243,8 +243,10 @@
     <section class="page-section gift-note-section" id="gift-note" aria-labelledby="gift-note-title" data-invite="section:gift-note">
       <div class="shell gift-note-wrap reveal">
         <div class="gift-note-panel">
-          <p class="gift-note-kicker">A LITTLE NOTE</p>
-          <h2 id="gift-note-title">一點小心意</h2>
+          <header class="section-header section-header--compact gift-note-heading">
+            <p class="gift-note-kicker section-header__eyebrow">A LITTLE NOTE</p>
+            <h2 class="section-header__title" id="gift-note-title">一點小心意</h2>
+          </header>
           <span class="gift-note-line" aria-hidden="true"></span>
           <div class="gift-note-copy">
             <p>您願意來到現場，<br>與我們一起見證這個重要的時刻，<br>就是我們最珍貴的禮物。</p>
@@ -256,9 +258,9 @@
 
     <section class="page-section ceremony-section" id="ceremony-info" aria-labelledby="ceremony-info-title" data-invite="section:ceremony-info">
       <div class="shell wedding-info-wrap">
-        <header class="section-title reveal">
-          <p>WEDDING CEREMONY</p>
-          <h2 id="ceremony-info-title">婚禮資訊</h2>
+        <header class="section-title section-header reveal">
+          <p class="section-header__eyebrow">WEDDING CEREMONY</p>
+          <h2 class="section-header__title" id="ceremony-info-title">婚禮資訊</h2>
         </header>
 
         <div class="wedding-facts">
@@ -318,10 +320,10 @@
 
     <section class="page-section ceremony-parking-section" id="ceremony-parking" aria-labelledby="ceremony-parking-title" data-invite="section:ceremony-parking">
       <div class="shell ceremony-parking-shell">
-        <header class="section-title reveal">
-          <p>CEREMONY PARKING</p>
-          <h2 id="ceremony-parking-title">婚禮場地停車</h2>
-          <span>婚禮場地附近提供數個可停車位置，<br>建議提前抵達並依現場交通標誌停放。</span>
+        <header class="section-title section-header reveal">
+          <p class="section-header__eyebrow">CEREMONY PARKING</p>
+          <h2 class="section-header__title" id="ceremony-parking-title">婚禮場地停車</h2>
+          <p class="section-header__description">婚禮場地附近提供數個可停車位置，<br>建議提前抵達並依現場交通標誌停放。</p>
         </header>
 
         <div class="ceremony-parking-grid">
@@ -368,9 +370,9 @@
 
     <section class="ceremony-notes page-section soft-blue" id="ceremony-notes" aria-labelledby="ceremony-notes-title" data-invite="section:ceremony-notes">
       <div class="shell reveal">
-        <header class="section-title">
-          <p>BEFORE YOU ARRIVE</p>
-          <h2 id="ceremony-notes-title">婚禮注意事項</h2>
+        <header class="section-title section-header">
+          <p class="section-header__eyebrow">BEFORE YOU ARRIVE</p>
+          <h2 class="section-header__title" id="ceremony-notes-title">婚禮注意事項</h2>
         </header>
         <div class="ceremony-note-grid">
           <article class="glass-card ceremony-note">
@@ -394,10 +396,10 @@
 
     <section class="page-section" id="wedding-info" aria-labelledby="wedding-info-title" data-invite="section:wedding-info">
       <div class="shell wedding-info-wrap">
-        <header class="section-title reveal">
-          <p>WEDDING INFORMATION</p>
-          <h2 id="wedding-info-title">婚宴資訊</h2>
-          <span class="couple-name">子靖 <i>＆</i> 勤萱</span>
+        <header class="section-title section-header reveal">
+          <p class="section-header__eyebrow">WEDDING INFORMATION</p>
+          <h2 class="section-header__title" id="wedding-info-title">婚宴資訊</h2>
+          <p class="couple-name section-header__description">子靖 <i>＆</i> 勤萱</p>
         </header>
 
         <div class="wedding-facts">
@@ -435,9 +437,9 @@
 
     <section class="page-section soft-blue" id="venue" aria-labelledby="venue-title" data-invite="section:venue">
       <div class="shell reveal">
-        <header class="section-title">
-          <p>02 · GETTING THERE</p>
-          <h2 id="venue-title">交通與抵達</h2>
+        <header class="section-title section-header">
+          <p class="section-header__eyebrow">02 · GETTING THERE</p>
+          <h2 class="section-header__title" id="venue-title">交通與抵達</h2>
         </header>
 
         <div class="arrival-guides">
@@ -471,10 +473,10 @@
 
     <section class="page-section" id="parking" aria-labelledby="parking-title" data-invite="section:parking">
       <div class="shell reveal">
-        <header class="section-title">
-          <p>03 · PARKING</p>
-          <h2 id="parking-title">停車資訊</h2>
-          <span>會館備有地下與戶外停車空間。</span>
+        <header class="section-title section-header">
+          <p class="section-header__eyebrow">03 · PARKING</p>
+          <h2 class="section-header__title" id="parking-title">停車資訊</h2>
+          <p class="section-header__description">會館備有地下與戶外停車空間。</p>
         </header>
         <div class="banquet-parking-grid">
           <article class="glass-card banquet-parking-card reveal">
@@ -517,10 +519,10 @@
 
     <section class="page-section soft-gold" id="seating" aria-labelledby="seating-title" data-invite="section:seating">
       <div class="shell seat-lookup-shell">
-        <header class="section-title seat-title reveal">
-          <p>SEAT LOOKUP</p>
-          <h2 id="seating-title">座位查詢</h2>
-          <span>歡迎蒞臨我們的婚禮<br>請輸入您的姓名即可快速查詢桌位。</span>
+        <header class="section-title section-header seat-title reveal">
+          <p class="section-header__eyebrow">SEAT LOOKUP</p>
+          <h2 class="section-header__title" id="seating-title">座位查詢</h2>
+          <p class="section-header__description">歡迎蒞臨我們的婚禮<br>請輸入您的姓名即可快速查詢桌位。</p>
         </header>
 
         <div class="seat-lookup-stage reveal">
@@ -545,10 +547,10 @@
     </section>
 
     <section class="story-gallery" id="gallery" aria-labelledby="gallery-title" data-invite="section:gallery">
-      <header class="section-title story-title shell reveal">
-        <p>05 · GALLERY</p>
-        <h2 id="gallery-title">OUR STORY</h2>
-        <span>每一張照片，都記錄著我們一路走來的點滴。</span>
+      <header class="section-title section-header story-title shell reveal">
+        <p class="section-header__eyebrow">05 · GALLERY</p>
+        <h2 class="section-header__title" id="gallery-title">OUR STORY</h2>
+        <p class="section-header__description">每一張照片，都記錄著我們一路走來的點滴。</p>
       </header>
 
       <button class="gallery-media gallery-hero reveal" type="button" data-gallery-index="0" aria-label="開啟婚紗相簿第 1 張照片">
@@ -607,10 +609,10 @@
       <div class="shell share-shell">
         <article class="glass-card share-card reveal">
           <div class="share-mark" aria-hidden="true"><span></span></div>
-          <header class="share-heading">
-            <p>PHOTO SHARING</p>
-            <h2 id="share-title">分享婚宴中的美好時刻</h2>
-            <p class="share-intro">如果您在婚宴當天拍下了照片或影片，<br>歡迎上傳到我們的共同相簿，<br>一起收藏這份珍貴回憶。</p>
+          <header class="share-heading section-header">
+            <p class="section-header__eyebrow">PHOTO SHARING</p>
+            <h2 class="section-header__title" id="share-title">分享婚宴中的美好時刻</h2>
+            <p class="share-intro section-header__description">如果您在婚宴當天拍下了照片或影片，<br>歡迎上傳到我們的共同相簿，<br>一起收藏這份珍貴回憶。</p>
           </header>
 
           <div class="share-steps" aria-label="照片上傳步驟">
@@ -636,9 +638,9 @@
 
     <section class="page-section faq-section" id="faq" aria-labelledby="faq-title" data-invite="section:faq">
       <div class="shell faq-shell">
-        <header class="section-title reveal">
-          <p>QUESTIONS & ANSWERS</p>
-          <h2 id="faq-title">常見問題</h2>
+        <header class="section-title section-header reveal">
+          <p class="section-header__eyebrow">QUESTIONS & ANSWERS</p>
+          <h2 class="section-header__title" id="faq-title">常見問題</h2>
         </header>
         <div class="faq-list reveal">
           <details>
