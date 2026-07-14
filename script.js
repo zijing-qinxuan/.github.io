@@ -22,9 +22,9 @@ const INVITE_CONFIG = {
   },
   online: {
     heroText: ["婚禮｜14:00"],
-    sections: ["hero", "invitation-note", "rsvp", "ceremony-info", "gallery"],
-    navigation: ["rsvp", "ceremony-info", "gallery"],
-    hiddenSections: ["gift-note", "ceremony-parking", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "share", "faq"],
+    sections: ["hero", "invitation-note", "rsvp", "ceremony-info", "gallery", "share"],
+    navigation: ["rsvp", "ceremony-info", "gallery", "share"],
+    hiddenSections: ["gift-note", "ceremony-parking", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "faq"],
     content: ["online-attendance"],
     ceremonyEntryLabel: "線上開放進入"
   }
@@ -763,20 +763,16 @@ const unifiedRevealTargets = document.querySelectorAll([
   '.page-section .glass-card',
   '.page-section .share-step',
   '.story-gallery .story-title',
-  '.story-gallery .gallery-media',
+  '.story-gallery .wedding-carousel',
   '.site-footer'
 ].join(','));
 
 unifiedRevealTargets.forEach((item) => item.classList.add('reveal'));
 
-document.querySelectorAll('.wedding-facts, .ceremony-parking-grid, .ceremony-note-grid, .arrival-guides, .banquet-parking-grid, .share-steps, .story-sequence').forEach((group) => {
+document.querySelectorAll('.wedding-facts, .ceremony-parking-grid, .ceremony-note-grid, .arrival-guides, .banquet-parking-grid, .share-steps').forEach((group) => {
   [...group.children].forEach((item, index) => {
     item.style.setProperty('--reveal-delay', `${Math.min(index * 70, 350)}ms`);
   });
-});
-
-document.querySelectorAll('.story-gallery .gallery-media').forEach((item, index) => {
-  item.style.setProperty('--reveal-delay', `${Math.min(index * 60, 360)}ms`);
 });
 
 const revealItems = [...document.querySelectorAll('.reveal:not(.is-visible)')]
@@ -930,14 +926,247 @@ let touchStartX = 0;
 let lightboxScrollY = 0;
 let lightboxCloseTimer;
 
-document.querySelectorAll('.gallery-media img').forEach((image) => {
+const weddingCarousel = document.querySelector('.wedding-carousel');
+const carouselViewport = weddingCarousel?.querySelector('.wedding-carousel__viewport');
+const carouselTrack = weddingCarousel?.querySelector('.wedding-carousel__track');
+const carouselSlides = weddingCarousel ? [...weddingCarousel.querySelectorAll('.wedding-carousel__slide')] : [];
+const carouselPrevious = weddingCarousel?.querySelector('.wedding-carousel__arrow--previous');
+const carouselNext = weddingCarousel?.querySelector('.wedding-carousel__arrow--next');
+const carouselDots = weddingCarousel?.querySelector('.wedding-carousel__dots');
+const carouselRestart = weddingCarousel?.querySelector('.wedding-carousel__restart');
+const carouselMobileQuery = window.matchMedia('(max-width: 820px)');
+let carouselActiveIndex = 0;
+let carouselAutoplayTimer = null;
+let carouselUserPaused = false;
+let carouselPointerInside = false;
+let carouselFocusInside = false;
+let carouselInView = false;
+let carouselScrollTicking = false;
+let carouselLayoutTicking = false;
+let carouselRequestToken = 0;
+
+function carouselIndex(index) {
+  return (index + carouselSlides.length) % carouselSlides.length;
+}
+
+function primeCarouselImages(index) {
+  if (!carouselSlides.length) return;
+  [index - 1, index, index + 1].forEach((candidate) => {
+    const image = carouselSlides[carouselIndex(candidate)].querySelector('img');
+    if (image) image.loading = 'eager';
+  });
+}
+
+function setCarouselActiveState(index) {
+  carouselActiveIndex = carouselIndex(index);
+  carouselSlides.forEach((slide, slideIndex) => {
+    const active = slideIndex === carouselActiveIndex;
+    slide.classList.toggle('is-active', active);
+    slide.setAttribute('aria-hidden', String(!active));
+    slide.querySelector('.gallery-media').tabIndex = active ? 0 : -1;
+  });
+  [...carouselDots.children].forEach((dot, dotIndex) => {
+    const active = dotIndex === carouselActiveIndex;
+    dot.classList.toggle('is-active', active);
+    if (active) dot.setAttribute('aria-current', 'true');
+    else dot.removeAttribute('aria-current');
+  });
+  primeCarouselImages(carouselActiveIndex);
+}
+
+function positionCarousel(index, smooth = true) {
+  const slide = carouselSlides[index];
+  if (!slide) return;
+  if (carouselMobileQuery.matches) {
+    carouselTrack.style.transform = '';
+    const left = slide.offsetLeft - ((carouselViewport.clientWidth - slide.offsetWidth) / 2);
+    carouselViewport.scrollTo({
+      left,
+      behavior: smooth && !reducedMotionQuery.matches ? 'smooth' : 'auto'
+    });
+    return;
+  }
+
+  carouselViewport.scrollLeft = 0;
+  const offset = (carouselViewport.clientWidth / 2)
+    - (carouselTrack.offsetLeft + slide.offsetLeft + (slide.offsetWidth / 2));
+  carouselTrack.style.transitionDuration = smooth && !reducedMotionQuery.matches ? '' : '0ms';
+  carouselTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
+  if (!smooth && !reducedMotionQuery.matches) {
+    window.requestAnimationFrame(() => { carouselTrack.style.transitionDuration = ''; });
+  }
+}
+
+function canAutoplayCarousel() {
+  return carouselInView
+    && !carouselUserPaused
+    && !carouselPointerInside
+    && !carouselFocusInside
+    && !document.hidden
+    && !reducedMotionQuery.matches;
+}
+
+function scheduleCarouselAutoplay() {
+  window.clearTimeout(carouselAutoplayTimer);
+  carouselAutoplayTimer = null;
+  if (!canAutoplayCarousel()) return;
+  carouselAutoplayTimer = window.setTimeout(() => {
+    carouselAutoplayTimer = null;
+    showCarouselSlide(carouselActiveIndex + 1);
+  }, 6000);
+}
+
+function pauseCarouselForUser() {
+  carouselUserPaused = true;
+  scheduleCarouselAutoplay();
+}
+
+function showCarouselSlide(index, userInitiated = false) {
+  if (userInitiated) pauseCarouselForUser();
+  const targetIndex = carouselIndex(index);
+  const image = carouselSlides[targetIndex]?.querySelector('img');
+  const requestToken = ++carouselRequestToken;
+  const activate = () => {
+    if (requestToken !== carouselRequestToken) return;
+    setCarouselActiveState(targetIndex);
+    positionCarousel(carouselActiveIndex);
+    scheduleCarouselAutoplay();
+  };
+
+  if (!image || image.complete) {
+    activate();
+    return;
+  }
+
+  image.loading = 'eager';
+  image.addEventListener('load', activate, { once: true });
+  image.addEventListener('error', activate, { once: true });
+}
+
+function updateCarouselFromScroll() {
+  if (!carouselMobileQuery.matches || carouselScrollTicking) return;
+  carouselScrollTicking = true;
+  window.requestAnimationFrame(() => {
+    const viewportCenter = carouselViewport.scrollLeft + (carouselViewport.clientWidth / 2);
+    const closestIndex = carouselSlides.reduce((closest, slide, index) => {
+      const slideCenter = slide.offsetLeft + (slide.offsetWidth / 2);
+      const closestCenter = carouselSlides[closest].offsetLeft + (carouselSlides[closest].offsetWidth / 2);
+      return Math.abs(slideCenter - viewportCenter) < Math.abs(closestCenter - viewportCenter) ? index : closest;
+    }, 0);
+    if (closestIndex !== carouselActiveIndex) setCarouselActiveState(closestIndex);
+    carouselScrollTicking = false;
+  });
+}
+
+function requestCarouselLayout() {
+  if (carouselLayoutTicking) return;
+  carouselLayoutTicking = true;
+  window.requestAnimationFrame(() => {
+    positionCarousel(carouselActiveIndex, false);
+    carouselLayoutTicking = false;
+  });
+}
+
+function setCarouselImageOrientation(image) {
+  if (!image.naturalWidth || !image.naturalHeight) return;
+  const slide = image.closest('.wedding-carousel__slide');
+  if (!slide) return;
+  const portrait = image.naturalHeight > image.naturalWidth;
+  slide.classList.toggle('is-portrait', portrait);
+  slide.classList.toggle('is-landscape', !portrait);
+  requestCarouselLayout();
+}
+
+carouselSlides.forEach((slide) => {
+  const image = slide.querySelector('img');
+  if (!image) return;
   const markLoaded = () => {
+    setCarouselImageOrientation(image);
     image.closest('.gallery-media').classList.add('loaded');
     requestScrollUpdate();
   };
-  if (image.complete) markLoaded();
+  if (image.complete && image.naturalWidth) markLoaded();
   else image.addEventListener('load', markLoaded, { once: true });
 });
+
+if (weddingCarousel && carouselSlides.length && VALID_INVITE_MODES.includes(inviteMode) && !weddingCarousel.closest('[hidden]')) {
+  carouselSlides.forEach((slide, index) => {
+    const dot = document.createElement('button');
+    dot.className = 'wedding-carousel__dot';
+    dot.type = 'button';
+    dot.setAttribute('aria-label', `查看第 ${index + 1} 張婚紗照`);
+    dot.setAttribute('aria-controls', 'gallery-carousel-viewport');
+    dot.addEventListener('click', () => showCarouselSlide(index, true));
+    carouselDots.append(dot);
+  });
+
+  carouselPrevious.addEventListener('click', () => showCarouselSlide(carouselActiveIndex - 1, true));
+  carouselNext.addEventListener('click', () => showCarouselSlide(carouselActiveIndex + 1, true));
+  carouselRestart.addEventListener('click', () => {
+    carouselUserPaused = false;
+    carouselFocusInside = false;
+    scheduleCarouselAutoplay();
+  });
+
+  carouselViewport.addEventListener('pointerdown', pauseCarouselForUser, { passive: true });
+  carouselViewport.addEventListener('scroll', updateCarouselFromScroll, { passive: true });
+  weddingCarousel.addEventListener('mouseenter', () => {
+    carouselPointerInside = true;
+    scheduleCarouselAutoplay();
+  });
+  weddingCarousel.addEventListener('mouseleave', () => {
+    carouselPointerInside = false;
+    scheduleCarouselAutoplay();
+  });
+  weddingCarousel.addEventListener('focusin', () => {
+    carouselFocusInside = true;
+    scheduleCarouselAutoplay();
+  });
+  weddingCarousel.addEventListener('focusout', () => {
+    window.requestAnimationFrame(() => {
+      carouselFocusInside = weddingCarousel.contains(document.activeElement);
+      scheduleCarouselAutoplay();
+    });
+  });
+  weddingCarousel.addEventListener('keydown', (event) => {
+    if (!lightbox.hidden || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    event.preventDefault();
+    showCarouselSlide(carouselActiveIndex + (event.key === 'ArrowRight' ? 1 : -1), true);
+  });
+  carouselTrack.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-gallery-index]');
+    if (!button) return;
+    const index = carouselSlides.indexOf(button.closest('.wedding-carousel__slide'));
+    if (index < 0 || index === carouselActiveIndex) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showCarouselSlide(index, true);
+  }, true);
+
+  document.addEventListener('visibilitychange', scheduleCarouselAutoplay);
+  reducedMotionQuery.addEventListener?.('change', () => {
+    requestCarouselLayout();
+    scheduleCarouselAutoplay();
+  });
+  carouselMobileQuery.addEventListener?.('change', requestCarouselLayout);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(requestCarouselLayout).observe(carouselViewport);
+  } else {
+    window.addEventListener('resize', requestCarouselLayout, { passive: true });
+  }
+  if ('IntersectionObserver' in window) {
+    const carouselVisibilityObserver = new IntersectionObserver(([entry]) => {
+      carouselInView = entry.isIntersecting;
+      scheduleCarouselAutoplay();
+    }, { threshold: .25 });
+    carouselVisibilityObserver.observe(weddingCarousel);
+  } else {
+    carouselInView = true;
+  }
+
+  setCarouselActiveState(0);
+  window.requestAnimationFrame(() => positionCarousel(0, false));
+}
 
 function showGalleryImage(index) {
   currentGalleryIndex = (index + galleryImages.length) % galleryImages.length;
