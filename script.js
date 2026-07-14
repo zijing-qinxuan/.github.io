@@ -582,7 +582,6 @@ function setMenu(open) {
   menuButton.setAttribute('aria-label', open ? '關閉選單' : '開啟選單');
   navLinks.classList.toggle('open', open);
   header.classList.toggle('menu-active', open);
-  if (open) header.classList.remove('compact');
   document.body.classList.toggle('menu-open', open);
 }
 
@@ -599,8 +598,13 @@ menuButton.addEventListener('click', () => {
 
 navLinks.querySelectorAll('a').forEach((link) => {
   link.addEventListener('click', () => {
+    const wasMobileMenuOpen = window.innerWidth <= 820 && menuButton.getAttribute('aria-expanded') === 'true';
+    setActiveNavLink(link);
     setMoreMenu(false);
     setMenu(false);
+    if (wasMobileMenuOpen) {
+      window.requestAnimationFrame(() => menuButton.focus({ preventScroll: true }));
+    }
   });
 });
 
@@ -657,7 +661,6 @@ function updateHeader() {
   header.classList.toggle('scrolled', window.scrollY >= heroBottom);
 }
 
-let lastScrollY = window.scrollY;
 let scrollTicking = false;
 
 function updateScrollEffects() {
@@ -675,12 +678,6 @@ function updateScrollEffects() {
     heroMedia.style.transform = '';
   }
 
-  if (!header.classList.contains('menu-active')) {
-    if (currentScrollY > lastScrollY + 4 && currentScrollY > 90) header.classList.add('compact');
-    if (currentScrollY < lastScrollY - 4 || currentScrollY < 30) header.classList.remove('compact');
-  }
-
-  lastScrollY = currentScrollY;
   scrollTicking = false;
 }
 
@@ -693,13 +690,81 @@ function requestScrollUpdate() {
 requestScrollUpdate();
 window.addEventListener('scroll', requestScrollUpdate, { passive: true });
 
+const navSectionLinks = [...navLinks.querySelectorAll('a.nav-link[href^="#"]')];
+let scrollSpyObserver = null;
+
+function clearNavActiveState() {
+  navSectionLinks.forEach((link) => {
+    link.classList.remove('is-active');
+    link.removeAttribute('aria-current');
+  });
+  navMoreToggle.classList.remove('is-active');
+  navMore.classList.remove('has-active-section');
+}
+
+function setActiveNavLink(activeLink) {
+  clearNavActiveState();
+  if (!activeLink || activeLink.hidden || activeLink.closest('[hidden]')) return;
+
+  activeLink.classList.add('is-active');
+  activeLink.setAttribute('aria-current', 'location');
+
+  const activeIsInMoreMenu = navMoreMenu.contains(activeLink);
+  navMoreToggle.classList.toggle('is-active', activeIsInMoreMenu);
+  navMore.classList.toggle('has-active-section', activeIsInMoreMenu);
+}
+
+function initializeScrollSpy() {
+  scrollSpyObserver?.disconnect();
+  scrollSpyObserver = null;
+  clearNavActiveState();
+
+  if (!VALID_INVITE_MODES.includes(inviteMode) || !('IntersectionObserver' in window)) return;
+
+  const observedItems = navSectionLinks
+    .filter((link) => !link.hidden && !link.closest('[hidden]'))
+    .map((link) => {
+      const section = document.querySelector(link.getAttribute('href'));
+      return section && !section.hidden && !section.closest('[hidden]') && section.getClientRects().length > 0
+        ? { link, section }
+        : null;
+    })
+    .filter(Boolean);
+
+  const linkBySection = new Map(observedItems.map(({ link, section }) => [section, link]));
+  const intersectingSections = new Map();
+
+  scrollSpyObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) intersectingSections.set(entry.target, entry);
+      else intersectingSections.delete(entry.target);
+    });
+
+    const readingLine = window.innerHeight * .3;
+    const activeEntry = [...intersectingSections.values()].sort((first, second) => {
+      const firstDistance = Math.abs(first.target.getBoundingClientRect().top - readingLine);
+      const secondDistance = Math.abs(second.target.getBoundingClientRect().top - readingLine);
+      return firstDistance - secondDistance || second.intersectionRatio - first.intersectionRatio;
+    })[0];
+
+    setActiveNavLink(activeEntry ? linkBySection.get(activeEntry.target) : null);
+  }, {
+    threshold: [0, .15, .35, .6],
+    rootMargin: '-20% 0px -60% 0px'
+  });
+
+  observedItems.forEach(({ section }) => scrollSpyObserver.observe(section));
+}
+
+initializeScrollSpy();
+
 const unifiedRevealTargets = document.querySelectorAll([
   '.page-section .section-title',
   '.page-section .glass-card',
   '.page-section .share-step',
   '.story-gallery .story-title',
   '.story-gallery .gallery-media',
-  'footer'
+  '.site-footer'
 ].join(','));
 
 unifiedRevealTargets.forEach((item) => item.classList.add('reveal'));
