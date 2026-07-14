@@ -22,9 +22,9 @@ const INVITE_CONFIG = {
   },
   online: {
     heroText: ["婚禮｜14:00"],
-    sections: ["hero", "invitation-note", "rsvp", "ceremony-info", "gallery", "share"],
-    navigation: ["rsvp", "ceremony-info", "gallery", "share"],
-    hiddenSections: ["gift-note", "ceremony-parking", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "faq"],
+    sections: ["hero", "invitation-note", "rsvp", "ceremony-info", "gallery"],
+    navigation: ["rsvp", "ceremony-info", "gallery"],
+    hiddenSections: ["gift-note", "ceremony-parking", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "share", "faq"],
     content: ["online-attendance"],
     ceremonyEntryLabel: "線上開放進入"
   }
@@ -771,7 +771,7 @@ unifiedRevealTargets.forEach((item) => item.classList.add('reveal'));
 
 document.querySelectorAll('.wedding-facts, .ceremony-parking-grid, .ceremony-note-grid, .arrival-guides, .banquet-parking-grid, .share-steps').forEach((group) => {
   [...group.children].forEach((item, index) => {
-    item.style.setProperty('--reveal-delay', `${Math.min(index * 70, 350)}ms`);
+    item.style.setProperty('--reveal-delay', `${Math.min(index * 110, 330)}ms`);
   });
 });
 
@@ -920,6 +920,7 @@ const galleryImages = [
   { src: 'assets/gallery/10.jpg', width: 1620, height: 1080 },
   { src: 'assets/gallery/11.jpg', width: 1622, height: 1080 }
 ];
+const gallerySequence = galleryButtons.map((button) => Number(button.dataset.galleryIndex));
 let currentGalleryIndex = 0;
 let lastGalleryTrigger;
 let touchStartX = 0;
@@ -935,6 +936,14 @@ const carouselNext = weddingCarousel?.querySelector('.wedding-carousel__arrow--n
 const carouselDots = weddingCarousel?.querySelector('.wedding-carousel__dots');
 const carouselRestart = weddingCarousel?.querySelector('.wedding-carousel__restart');
 const carouselMobileQuery = window.matchMedia('(max-width: 820px)');
+const carouselIsEnabled = Boolean(
+  weddingCarousel
+  && carouselSlides.length
+  && VALID_INVITE_MODES.includes(inviteMode)
+  && !weddingCarousel.closest('[hidden]')
+);
+let carouselLeadingClone;
+let carouselTrailingClone;
 let carouselActiveIndex = 0;
 let carouselAutoplayTimer = null;
 let carouselUserPaused = false;
@@ -947,6 +956,33 @@ let carouselRequestToken = 0;
 
 function carouselIndex(index) {
   return (index + carouselSlides.length) % carouselSlides.length;
+}
+
+function createCarouselClone(slide) {
+  const clone = slide.cloneNode(true);
+  clone.className = 'wedding-carousel__clone';
+  clone.removeAttribute('role');
+  clone.removeAttribute('aria-roledescription');
+  clone.removeAttribute('aria-label');
+  clone.setAttribute('aria-hidden', 'true');
+  clone.setAttribute('inert', '');
+  const button = clone.querySelector('.gallery-media');
+  button.removeAttribute('data-gallery-index');
+  button.removeAttribute('aria-label');
+  button.tabIndex = -1;
+  const image = button.querySelector('img');
+  image.loading = 'lazy';
+  image.removeAttribute('fetchpriority');
+  return clone;
+}
+
+if (carouselIsEnabled) {
+  carouselLeadingClone = createCarouselClone(carouselSlides[carouselSlides.length - 1]);
+  carouselTrailingClone = createCarouselClone(carouselSlides[0]);
+  carouselLeadingClone.classList.add('is-before-active');
+  carouselTrailingClone.classList.add('is-after-active');
+  carouselTrack.prepend(carouselLeadingClone);
+  carouselTrack.append(carouselTrailingClone);
 }
 
 function primeCarouselImages(index) {
@@ -962,6 +998,8 @@ function setCarouselActiveState(index) {
   carouselSlides.forEach((slide, slideIndex) => {
     const active = slideIndex === carouselActiveIndex;
     slide.classList.toggle('is-active', active);
+    slide.classList.toggle('is-before-active', slideIndex < carouselActiveIndex);
+    slide.classList.toggle('is-after-active', slideIndex > carouselActiveIndex);
     slide.setAttribute('aria-hidden', String(!active));
     slide.querySelector('.gallery-media').tabIndex = active ? 0 : -1;
   });
@@ -990,10 +1028,12 @@ function positionCarousel(index, smooth = true) {
   carouselViewport.scrollLeft = 0;
   const offset = (carouselViewport.clientWidth / 2)
     - (carouselTrack.offsetLeft + slide.offsetLeft + (slide.offsetWidth / 2));
-  carouselTrack.style.transitionDuration = smooth && !reducedMotionQuery.matches ? '' : '0ms';
+  const immediate = !smooth || reducedMotionQuery.matches;
+  if (immediate) carouselTrack.style.transition = 'none';
   carouselTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
-  if (!smooth && !reducedMotionQuery.matches) {
-    window.requestAnimationFrame(() => { carouselTrack.style.transitionDuration = ''; });
+  if (immediate) {
+    void carouselTrack.offsetWidth;
+    window.requestAnimationFrame(() => { carouselTrack.style.transition = ''; });
   }
 }
 
@@ -1017,6 +1057,7 @@ function scheduleCarouselAutoplay() {
 }
 
 function pauseCarouselForUser() {
+  carouselRequestToken += 1;
   carouselUserPaused = true;
   scheduleCarouselAutoplay();
 }
@@ -1024,12 +1065,13 @@ function pauseCarouselForUser() {
 function showCarouselSlide(index, userInitiated = false) {
   if (userInitiated) pauseCarouselForUser();
   const targetIndex = carouselIndex(index);
+  const wrapped = index < 0 || index >= carouselSlides.length;
   const image = carouselSlides[targetIndex]?.querySelector('img');
   const requestToken = ++carouselRequestToken;
   const activate = () => {
     if (requestToken !== carouselRequestToken) return;
     setCarouselActiveState(targetIndex);
-    positionCarousel(carouselActiveIndex);
+    positionCarousel(carouselActiveIndex, !wrapped);
     scheduleCarouselAutoplay();
   };
 
@@ -1048,12 +1090,23 @@ function updateCarouselFromScroll() {
   carouselScrollTicking = true;
   window.requestAnimationFrame(() => {
     const viewportCenter = carouselViewport.scrollLeft + (carouselViewport.clientWidth / 2);
-    const closestIndex = carouselSlides.reduce((closest, slide, index) => {
-      const slideCenter = slide.offsetLeft + (slide.offsetWidth / 2);
-      const closestCenter = carouselSlides[closest].offsetLeft + (carouselSlides[closest].offsetWidth / 2);
-      return Math.abs(slideCenter - viewportCenter) < Math.abs(closestCenter - viewportCenter) ? index : closest;
-    }, 0);
-    if (closestIndex !== carouselActiveIndex) setCarouselActiveState(closestIndex);
+    const items = [carouselLeadingClone, ...carouselSlides, carouselTrailingClone].filter(Boolean);
+    const closestItem = items.reduce((closest, item) => {
+      const itemCenter = item.offsetLeft + (item.offsetWidth / 2);
+      const closestCenter = closest.offsetLeft + (closest.offsetWidth / 2);
+      return Math.abs(itemCenter - viewportCenter) < Math.abs(closestCenter - viewportCenter) ? item : closest;
+    }, items[0]);
+
+    if (closestItem === carouselLeadingClone) {
+      setCarouselActiveState(carouselSlides.length - 1);
+      positionCarousel(carouselActiveIndex, false);
+    } else if (closestItem === carouselTrailingClone) {
+      setCarouselActiveState(0);
+      positionCarousel(carouselActiveIndex, false);
+    } else {
+      const closestIndex = carouselSlides.indexOf(closestItem);
+      if (closestIndex !== carouselActiveIndex) setCarouselActiveState(closestIndex);
+    }
     carouselScrollTicking = false;
   });
 }
@@ -1069,7 +1122,7 @@ function requestCarouselLayout() {
 
 function setCarouselImageOrientation(image) {
   if (!image.naturalWidth || !image.naturalHeight) return;
-  const slide = image.closest('.wedding-carousel__slide');
+  const slide = image.closest('.wedding-carousel__slide, .wedding-carousel__clone');
   if (!slide) return;
   const portrait = image.naturalHeight > image.naturalWidth;
   slide.classList.toggle('is-portrait', portrait);
@@ -1077,8 +1130,7 @@ function setCarouselImageOrientation(image) {
   requestCarouselLayout();
 }
 
-carouselSlides.forEach((slide) => {
-  const image = slide.querySelector('img');
+[...carouselTrack.querySelectorAll('img')].forEach((image) => {
   if (!image) return;
   const markLoaded = () => {
     setCarouselImageOrientation(image);
@@ -1089,7 +1141,7 @@ carouselSlides.forEach((slide) => {
   else image.addEventListener('load', markLoaded, { once: true });
 });
 
-if (weddingCarousel && carouselSlides.length && VALID_INVITE_MODES.includes(inviteMode) && !weddingCarousel.closest('[hidden]')) {
+if (carouselIsEnabled) {
   carouselSlides.forEach((slide, index) => {
     const dot = document.createElement('button');
     dot.className = 'wedding-carousel__dot';
@@ -1149,11 +1201,9 @@ if (weddingCarousel && carouselSlides.length && VALID_INVITE_MODES.includes(invi
     scheduleCarouselAutoplay();
   });
   carouselMobileQuery.addEventListener?.('change', requestCarouselLayout);
-  if ('ResizeObserver' in window) {
-    new ResizeObserver(requestCarouselLayout).observe(carouselViewport);
-  } else {
-    window.addEventListener('resize', requestCarouselLayout, { passive: true });
-  }
+  window.addEventListener('resize', requestCarouselLayout, { passive: true });
+  if ('ResizeObserver' in window) new ResizeObserver(requestCarouselLayout).observe(carouselViewport);
+  document.fonts?.ready.then(requestCarouselLayout);
   if ('IntersectionObserver' in window) {
     const carouselVisibilityObserver = new IntersectionObserver(([entry]) => {
       carouselInView = entry.isIntersecting;
@@ -1183,6 +1233,12 @@ function showGalleryImage(index) {
   } else {
     lightboxImage.classList.remove('switching');
   }
+}
+
+function showAdjacentGalleryImage(step) {
+  const currentPosition = gallerySequence.indexOf(currentGalleryIndex);
+  const nextPosition = (currentPosition + step + gallerySequence.length) % gallerySequence.length;
+  showGalleryImage(gallerySequence[nextPosition]);
 }
 
 function openLightbox(index, trigger) {
@@ -1218,15 +1274,15 @@ function finishClosingLightbox() {
 function closeLightbox() {
   if (lightbox.hidden || lightbox.classList.contains('closing')) return;
   lightbox.classList.add('closing');
-  lightboxCloseTimer = window.setTimeout(finishClosingLightbox, reducedMotionQuery.matches ? 0 : 380);
+  lightboxCloseTimer = window.setTimeout(finishClosingLightbox, reducedMotionQuery.matches ? 0 : 480);
 }
 
 galleryButtons.forEach((button) => {
   button.addEventListener('click', () => openLightbox(Number(button.dataset.galleryIndex), button));
 });
 
-lightboxPrev.addEventListener('click', () => showGalleryImage(currentGalleryIndex - 1));
-lightboxNext.addEventListener('click', () => showGalleryImage(currentGalleryIndex + 1));
+lightboxPrev.addEventListener('click', () => showAdjacentGalleryImage(-1));
+lightboxNext.addEventListener('click', () => showAdjacentGalleryImage(1));
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (event) => {
   if (event.target === lightbox || event.target.classList.contains('lightbox-stage')) closeLightbox();
@@ -1241,12 +1297,12 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'ArrowLeft') {
     event.preventDefault();
-    showGalleryImage(currentGalleryIndex - 1);
+    showAdjacentGalleryImage(-1);
     return;
   }
   if (event.key === 'ArrowRight') {
     event.preventDefault();
-    showGalleryImage(currentGalleryIndex + 1);
+    showAdjacentGalleryImage(1);
     return;
   }
   if (event.key !== 'Tab') return;
@@ -1273,7 +1329,7 @@ lightbox.addEventListener('touchstart', (event) => {
 lightbox.addEventListener('touchend', (event) => {
   const distance = event.changedTouches[0].clientX - touchStartX;
   if (Math.abs(distance) < 50) return;
-  showGalleryImage(currentGalleryIndex + (distance < 0 ? 1 : -1));
+  showAdjacentGalleryImage(distance < 0 ? 1 : -1);
 }, { passive: true });
 
 if (!reducedMotionQuery.matches) {
