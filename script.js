@@ -5,30 +5,32 @@ const SEAT_LOOKUP_DEV_PREVIEW_KEY = "wedding-seat-lookup-preview";
 const RSVP_ENDPOINT =
   "https://script.google.com/macros/s/AKfycbyvs0LurNvxURz_e15WG-ky2d1EFydHfJtbLYkbb1XTk_7Ol1RndFNAQTbcvFQKGwFbKw/exec";
 const VALID_INVITE_MODES = ["wedding", "full", "online"];
+const i18n = window.WeddingI18n;
+const t = (key, values = {}) => i18n.t(key, values);
 const INVITE_CONFIG = {
   wedding: {
-    heroText: ["婚禮｜14:00"],
+    heroKeys: ["hero.weddingSchedule"],
     sections: ["hero", "invitation-note", "rsvp", "gift-note", "ceremony-info", "ceremony-parking", "ceremony-notes", "gallery", "share", "faq"],
     navigation: ["rsvp", "ceremony-info", "ceremony-parking", "gallery", "share", "faq"],
     hiddenSections: ["wedding-info", "venue", "parking", "seating"],
     content: ["ceremony-venue"],
-    ceremonyEntryLabel: "開放入場"
+    ceremonyEntryKey: "hero.ceremonyEntry"
   },
   full: {
-    heroText: ["婚禮｜14:00", "婚宴｜18:00"],
+    heroKeys: ["hero.weddingSchedule", "hero.banquetSchedule"],
     sections: ["hero", "invitation-note", "rsvp", "gift-note", "ceremony-info", "ceremony-parking", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "gallery", "share", "faq"],
     navigation: ["rsvp", "ceremony-info", "ceremony-parking", "wedding-info", "venue", "parking", "seating", "gallery", "share", "faq"],
     hiddenSections: [],
     content: ["ceremony-venue", "banquet-faq"],
-    ceremonyEntryLabel: "開放入場"
+    ceremonyEntryKey: "hero.ceremonyEntry"
   },
   online: {
-    heroText: ["婚禮｜14:00"],
+    heroKeys: ["hero.weddingSchedule"],
     sections: ["hero", "invitation-note", "rsvp", "ceremony-info", "gallery"],
     navigation: ["rsvp", "ceremony-info", "gallery"],
     hiddenSections: ["gift-note", "ceremony-parking", "ceremony-notes", "wedding-info", "venue", "parking", "seating", "share", "faq"],
     content: ["online-attendance"],
-    ceremonyEntryLabel: "線上開放進入"
+    ceremonyEntryKey: "hero.onlineEntry"
   }
 };
 
@@ -88,14 +90,7 @@ function isSeatLookupOpen(now = Date.now()) {
 }
 
 function formatSeatLookupOpenDate() {
-  const dateParts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Taipei',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric'
-  }).formatToParts(new Date(SEAT_LOOKUP_OPEN_AT));
-  const dateValues = Object.fromEntries(dateParts.map(({ type, value }) => [type, value]));
-  return `${dateValues.year} 年 ${dateValues.month} 月 ${dateValues.day} 日`;
+  return t('seating.date');
 }
 
 document.querySelectorAll('[data-seat-lookup-open-date]').forEach((element) => {
@@ -113,8 +108,17 @@ function initializeSeatLookupAvailability() {
 }
 
 document.querySelectorAll('[data-rsvp-deadline]').forEach((element) => {
-  element.textContent = RSVP_DEADLINE_TEXT;
+  element.textContent = t('seating.deadline');
 });
+
+function renderInviteModeLanguage() {
+  if (!VALID_INVITE_MODES.includes(inviteMode)) return;
+  const config = INVITE_CONFIG[inviteMode];
+  ceremonyEntryLabel.textContent = t(config.ceremonyEntryKey);
+  [...heroSchedule.children].forEach((line, index) => {
+    line.textContent = t(config.heroKeys[index]);
+  });
+}
 
 if (VALID_INVITE_MODES.includes(inviteMode)) {
   const config = INVITE_CONFIG[inviteMode];
@@ -134,12 +138,12 @@ if (VALID_INVITE_MODES.includes(inviteMode)) {
     element.hidden = !config.content.includes(key);
   });
 
-  ceremonyEntryLabel.textContent = config.ceremonyEntryLabel;
-  config.heroText.forEach((text) => {
+  config.heroKeys.forEach((key) => {
     const line = document.createElement('span');
-    line.textContent = text;
+    line.textContent = t(key);
     heroSchedule.append(line);
   });
+  renderInviteModeLanguage();
   navMore.hidden = ![...navMoreMenu.querySelectorAll('a')].some((link) => !link.hidden);
 } else {
   document.body.classList.add('invite-missing');
@@ -156,11 +160,12 @@ function updateWeddingCountdown() {
 
   if (now < weddingDayStart) {
     const daysRemaining = Math.ceil((weddingCeremony - now) / 86400000);
-    weddingCountdown.textContent = `距離我們的婚禮還有 ${daysRemaining} 天`;
+    const unit = daysRemaining === 1 ? t('countdown.day') : t('countdown.days');
+    weddingCountdown.textContent = t('countdown.before', { days: daysRemaining, unit });
   } else if (now < weddingDayEnd) {
-    weddingCountdown.textContent = '今天，我們結婚了。';
+    weddingCountdown.textContent = t('countdown.today');
   } else {
-    weddingCountdown.textContent = '謝謝您與我們一起見證這一天。';
+    weddingCountdown.textContent = t('countdown.after');
   }
 }
 
@@ -188,7 +193,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 if (ONLINE_MEETING_URL.trim()) {
-  onlineMeetingButton.textContent = '進入線上婚禮';
+  onlineMeetingButton.textContent = t('online.enter');
   onlineMeetingButton.href = ONLINE_MEETING_URL.trim();
   onlineMeetingButton.target = '_blank';
   onlineMeetingButton.rel = 'noopener noreferrer';
@@ -198,23 +203,23 @@ if (ONLINE_MEETING_URL.trim()) {
   onlineMeetingButton.removeAttribute('href');
   onlineMeetingButton.setAttribute('aria-disabled', 'true');
   onlineMeetingButton.classList.add('is-unavailable');
-  onlineMeetingButton.textContent = '線上參加連結將於婚禮前提供';
+  onlineMeetingButton.textContent = t('online.unavailable');
 }
 
 const RSVP_STORAGE_KEY = "wedding-rsvp-submitted";
 const RSVP_MODE_CONFIG = {
   wedding: {
-    title: "婚禮出席回覆",
+    titleKey: "rsvp.modeTitle.wedding",
     questions: ["ceremony"],
     required: ["ceremony"]
   },
   full: {
-    title: "婚禮與婚宴出席回覆",
+    titleKey: "rsvp.modeTitle.full",
     questions: ["ceremony", "banquet"],
     required: ["ceremony", "banquet"]
   },
   online: {
-    title: "線上參加回覆",
+    titleKey: "rsvp.modeTitle.online",
     questions: ["online"],
     required: ["online"]
   }
@@ -246,11 +251,22 @@ let rsvpSubmitting = false;
 let rsvpPollingTimer = null;
 let rsvpStatusTimeout = null;
 let pendingRsvpSubmission = null;
+let rsvpSuccessState = null;
 const activeRsvpJsonpRequests = new Map();
+
+function setRsvpError(element, key = '', fallback = '') {
+  element.dataset.errorKey = key;
+  element.textContent = key ? t(key) : fallback;
+}
+
+function clearRsvpError(element) {
+  delete element.dataset.errorKey;
+  element.textContent = '';
+}
 
 function setRsvpExpanded(expanded, scrollToPanel = false) {
   rsvpToggle.setAttribute('aria-expanded', String(expanded));
-  rsvpToggle.querySelector('span').textContent = expanded ? '收起回覆表單' : '立即回覆';
+  rsvpToggle.querySelector('span').textContent = expanded ? t('rsvp.collapse') : t('rsvp.expand');
   rsvpPanel.classList.toggle('is-expanded', expanded);
   rsvpPanel.setAttribute('aria-hidden', String(!expanded));
 
@@ -315,7 +331,7 @@ function setRsvpSubmitting(submitting) {
   rsvpSubmitting = submitting;
   rsvpSubmit.disabled = submitting;
   rsvpSubmit.classList.toggle('loading', submitting);
-  rsvpSubmitLabel.textContent = submitting ? '正在送出⋯' : '送出回覆';
+  rsvpSubmitLabel.textContent = submitting ? t('rsvp.submitting') : t('rsvp.submit');
   rsvpForm.setAttribute('aria-busy', String(submitting));
 }
 
@@ -333,20 +349,22 @@ function scrollToRsvpSuccessCard() {
   });
 }
 
-function showRsvpSuccess(previouslySubmitted = false, ceremonyAttendance = '', action = 'created') {
+function renderRsvpSuccess() {
+  if (!rsvpSuccessState) return;
+  const { previouslySubmitted, ceremonyAttendance, action } = rsvpSuccessState;
   const wasUpdated = !previouslySubmitted && action === 'updated';
   rsvpSuccessTitle.textContent = previouslySubmitted
-    ? '您已完成出席回覆'
-    : (wasUpdated ? '✔ 回覆已更新' : '✔ 回覆已送出');
+    ? t('rsvp.submittedTitle')
+    : (wasUpdated ? t('rsvp.updatedTitle') : t('rsvp.createdTitle'));
   const isOnlineCeremony = !previouslySubmitted && ceremonyAttendance === '線上參加';
   let successMessage = previouslySubmitted
-    ? '我們已收到您的出席資訊。<br>期待與您一起分享這個重要的日子。'
+    ? t('rsvp.received')
     : (wasUpdated
-      ? '您的最新回覆已成功儲存，<br>已取代先前資料。'
-      : '期待與您一起分享這個重要的日子。');
+      ? t('rsvp.updatedMessage')
+      : t('rsvp.createdMessage'));
 
   if (isOnlineCeremony) {
-    successMessage += '<br><br>我們已為您登記線上參加婚禮。<br>正式連結將於婚禮前透過原邀請訊息提供，<br>請於婚禮前再次查看 LINE 訊息。';
+    successMessage += `<br><br>${t('rsvp.onlineSuccess')}`;
   }
   rsvpSuccessMessage.innerHTML = successMessage;
 
@@ -357,6 +375,11 @@ function showRsvpSuccess(previouslySubmitted = false, ceremonyAttendance = '', a
   } else {
     rsvpOnlineLink.removeAttribute('href');
   }
+}
+
+function showRsvpSuccess(previouslySubmitted = false, ceremonyAttendance = '', action = 'created') {
+  rsvpSuccessState = { previouslySubmitted, ceremonyAttendance, action };
+  renderRsvpSuccess();
   rsvpForm.hidden = true;
   rsvpForm.classList.remove('is-submitted');
   rsvpSuccess.hidden = false;
@@ -387,18 +410,18 @@ function storeRsvp(name) {
 function validateRsvpForm() {
   const config = RSVP_MODE_CONFIG[inviteMode];
   let firstInvalid = null;
-  document.querySelector('#rsvp-name-error').textContent = '';
-  document.querySelector('#rsvp-phone-error').textContent = '';
-  document.querySelector('#rsvp-vegetarian-error').textContent = '';
+  clearRsvpError(document.querySelector('#rsvp-name-error'));
+  clearRsvpError(document.querySelector('#rsvp-phone-error'));
+  clearRsvpError(document.querySelector('#rsvp-vegetarian-error'));
   rsvpName.removeAttribute('aria-invalid');
   rsvpPhone.removeAttribute('aria-invalid');
   rsvpForm.querySelectorAll('[data-rsvp-question]').forEach((question) => {
     question.removeAttribute('aria-invalid');
   });
-  rsvpForm.querySelectorAll('[data-rsvp-error]').forEach((error) => { error.textContent = ''; });
+  rsvpForm.querySelectorAll('[data-rsvp-error]').forEach(clearRsvpError);
 
   if (!rsvpName.value.trim()) {
-    document.querySelector('#rsvp-name-error').textContent = '請輸入您的姓名。';
+    setRsvpError(document.querySelector('#rsvp-name-error'), 'rsvp.nameRequired');
     rsvpName.setAttribute('aria-invalid', 'true');
     firstInvalid = rsvpName;
   }
@@ -407,11 +430,11 @@ function validateRsvpForm() {
   const normalizedPhone = phoneValue.replace(/[\s-]+/g, '');
   const phoneDigitCount = (normalizedPhone.match(/\d/g) || []).length;
   if (!phoneValue) {
-    document.querySelector('#rsvp-phone-error').textContent = '請輸入您的聯絡電話。';
+    setRsvpError(document.querySelector('#rsvp-phone-error'), 'rsvp.phoneRequired');
     rsvpPhone.setAttribute('aria-invalid', 'true');
     if (!firstInvalid) firstInvalid = rsvpPhone;
   } else if (phoneDigitCount < 8) {
-    document.querySelector('#rsvp-phone-error').textContent = '請輸入至少 8 位數字的聯絡電話。';
+    setRsvpError(document.querySelector('#rsvp-phone-error'), 'rsvp.phoneInvalid');
     rsvpPhone.setAttribute('aria-invalid', 'true');
     if (!firstInvalid) firstInvalid = rsvpPhone;
   }
@@ -419,13 +442,13 @@ function validateRsvpForm() {
   config.required.forEach((question) => {
     if (selectedRsvpValue(question)) return;
     const error = rsvpForm.querySelector(`[data-rsvp-error="${question}"]`);
-    error.textContent = '請選擇您的出席狀況。';
+    setRsvpError(error, 'rsvp.attendanceRequired');
     error.closest('.rsvp-question').setAttribute('aria-invalid', 'true');
     if (!firstInvalid) firstInvalid = rsvpForm.querySelector(`input[name="${question}"]`);
   });
 
   if (!rsvpCounts.hidden && rsvpVegetarianCount > rsvpPeopleCount) {
-    document.querySelector('#rsvp-vegetarian-error').textContent = '素食人數不得超過出席人數。';
+    setRsvpError(document.querySelector('#rsvp-vegetarian-error'), 'rsvp.vegetarianInvalid');
     if (!firstInvalid) firstInvalid = rsvpForm.querySelector('[data-counter="vegetarian"]');
   }
 
@@ -501,7 +524,20 @@ function finishRsvpWithError(message) {
   stopRsvpStatusPolling();
   setRsvpSubmitting(false);
   pendingRsvpSubmission = null;
-  rsvpSubmitError.textContent = message;
+  delete rsvpSubmitError.dataset.errorKey;
+  rsvpSubmitError.dataset.backendMessage = message;
+  const translatedMessage = i18n.translatePhrase(message);
+  rsvpSubmitError.textContent = i18n.getLanguage() === 'en' && translatedMessage === message
+    ? t('rsvp.submitFailed')
+    : translatedMessage;
+}
+
+function finishRsvpWithErrorKey(key) {
+  stopRsvpStatusPolling();
+  setRsvpSubmitting(false);
+  pendingRsvpSubmission = null;
+  delete rsvpSubmitError.dataset.backendMessage;
+  setRsvpError(rsvpSubmitError, key);
 }
 
 function handleRsvpStatusResult(result) {
@@ -512,7 +548,7 @@ function handleRsvpStatusResult(result) {
   if (!result.success) {
     finishRsvpWithError(typeof result.message === 'string' && result.message.trim()
       ? result.message.trim()
-      : '目前無法送出，請稍後再試。');
+      : t('rsvp.submitFailed'));
     return;
   }
 
@@ -555,13 +591,13 @@ function startRsvpStatusPolling(submissionId) {
   stopRsvpStatusPolling();
   rsvpPollingTimer = window.setInterval(() => pollRsvpSubmissionStatus(submissionId), 1000);
   rsvpStatusTimeout = window.setTimeout(() => {
-    finishRsvpWithError('目前無法確認回覆是否成功送達。\n請稍後查看或重新整理後再試一次。');
+    finishRsvpWithErrorKey('rsvp.statusTimeout');
   }, 20000);
 }
 
 if (VALID_INVITE_MODES.includes(inviteMode)) {
   const modeConfig = RSVP_MODE_CONFIG[inviteMode];
-  rsvpFormTitle.textContent = modeConfig.title;
+  rsvpFormTitle.textContent = t(modeConfig.titleKey);
   document.querySelectorAll('[data-rsvp-question]').forEach((question) => {
     question.hidden = !modeConfig.questions.includes(question.dataset.rsvpQuestion);
   });
@@ -582,7 +618,7 @@ rsvpToggle.addEventListener('click', () => {
 rsvpForm.querySelectorAll('input[type="radio"]').forEach((radio) => {
   radio.addEventListener('change', () => {
     const error = rsvpForm.querySelector(`[data-rsvp-error="${radio.name}"]`);
-    if (error) error.textContent = '';
+    if (error) clearRsvpError(error);
     radio.closest('.rsvp-question')?.removeAttribute('aria-invalid');
     updateRsvpAttendanceCounts();
   });
@@ -591,14 +627,14 @@ rsvpForm.querySelectorAll('input[type="radio"]').forEach((radio) => {
 rsvpName.addEventListener('input', () => {
   if (!rsvpName.value.trim()) return;
   rsvpName.removeAttribute('aria-invalid');
-  document.querySelector('#rsvp-name-error').textContent = '';
+  clearRsvpError(document.querySelector('#rsvp-name-error'));
 });
 
 rsvpPhone.addEventListener('input', () => {
   const normalizedPhone = rsvpPhone.value.trim().replace(/[\s-]+/g, '');
   if ((normalizedPhone.match(/\d/g) || []).length < 8) return;
   rsvpPhone.removeAttribute('aria-invalid');
-  document.querySelector('#rsvp-phone-error').textContent = '';
+  clearRsvpError(document.querySelector('#rsvp-phone-error'));
 });
 
 rsvpForm.querySelectorAll('[data-counter]').forEach((button) => {
@@ -611,7 +647,7 @@ rsvpForm.querySelectorAll('[data-counter]').forEach((button) => {
       rsvpVegetarianCount += button.dataset.action === 'increase' ? 1 : -1;
       rsvpVegetarianCount = Math.min(rsvpPeopleCount, Math.max(0, rsvpVegetarianCount));
     }
-    document.querySelector('#rsvp-vegetarian-error').textContent = '';
+    clearRsvpError(document.querySelector('#rsvp-vegetarian-error'));
     updateRsvpCounters();
   });
 });
@@ -620,7 +656,8 @@ rsvpForm.addEventListener('submit', (event) => {
   event.preventDefault();
   if (rsvpSubmitting || !validateRsvpForm()) return;
 
-  rsvpSubmitError.textContent = '';
+  delete rsvpSubmitError.dataset.backendMessage;
+  clearRsvpError(rsvpSubmitError);
   const ceremonyAttendance = inviteMode === 'online' ? '' : selectedRsvpValue('ceremony');
   const submissionId = createRsvpSubmissionId();
   pendingRsvpSubmission = {
@@ -640,7 +677,7 @@ rsvpForm.addEventListener('submit', (event) => {
     body: formData
   }).catch(() => {
     if (pendingRsvpSubmission?.submissionId !== submissionId) return;
-    finishRsvpWithError('目前無法送出，請稍後再試。');
+    finishRsvpWithErrorKey('rsvp.submitFailed');
   });
 });
 
@@ -654,7 +691,7 @@ rsvpEdit.addEventListener('click', () => {
 
 function setMenu(open) {
   menuButton.setAttribute('aria-expanded', String(open));
-  menuButton.setAttribute('aria-label', open ? '關閉選單' : '開啟選單');
+  menuButton.setAttribute('aria-label', open ? t('nav.closeMenu') : t('nav.openMenu'));
   navLinks.classList.toggle('open', open);
   header.classList.toggle('menu-active', open);
   document.body.classList.toggle('menu-open', open);
@@ -903,6 +940,7 @@ const lookupHint = document.querySelector('#lookup-hint');
 const lookupButton = seatSearch.querySelector('.lookup-button');
 const lookupButtonLabel = lookupButton.querySelector('.button-label');
 let lookupTimer;
+let lookupState = null;
 
 function revealLookupResult(type) {
   lookupResult.className = `lookup-result ${type}`;
@@ -917,38 +955,46 @@ function revealLookupResult(type) {
   });
 }
 
-function showSeatResult(name, seat) {
+function showSeatResult(name, seat, reveal = true) {
   lookupResult.innerHTML = `
-    <p class="result-welcome">歡迎蒞臨</p>
+    <p class="result-welcome"></p>
     <h3 class="result-name"></h3>
     <p class="table-number"></p>
     <div class="result-rule" aria-hidden="true"></div>
     <p class="guest-count"></p>
     <p class="result-closing">期待與您共度美好時光</p>
     <p class="special-meal" hidden></p>`;
+  lookupResult.querySelector('.result-welcome').textContent = t('seating.welcome');
   lookupResult.querySelector('.result-name').textContent = name;
-  lookupResult.querySelector('.table-number').textContent = `${seat.table} 桌`;
-  lookupResult.querySelector('.guest-count').textContent = `${seat.guests}賓客`;
+  lookupResult.querySelector('.table-number').textContent = t('seating.table', { table: seat.table });
+  const guestCount = String(seat.guests).match(/\d+/)?.[0] ?? seat.guests;
+  lookupResult.querySelector('.guest-count').textContent = t('seating.guests', { guests: guestCount });
+  lookupResult.querySelector('.result-closing').textContent = t('seating.closing');
   if (seat.meal !== '一般餐') {
     const specialMeal = lookupResult.querySelector('.special-meal');
-    specialMeal.textContent = `※ 已安排${seat.meal}`;
+    const meal = seat.meal === '素食' ? t('seating.vegetarianMeal') : seat.meal;
+    specialMeal.textContent = t('seating.specialMeal', { meal });
     specialMeal.hidden = false;
   }
-  revealLookupResult('success');
+  lookupState = { type: 'success', name, seat };
+  if (reveal) revealLookupResult('success');
+  else lookupResult.className = 'lookup-result success show';
 }
 
-function showNotFound() {
+function showNotFound(reveal = true) {
   lookupResult.innerHTML = `
     <span class="not-found-icon" aria-hidden="true"></span>
-    <h3 class="not-found-title">很抱歉</h3>
-    <p class="not-found-copy">目前找不到您的座位資訊。<br>請確認姓名是否與喜帖相同，<br>或向現場接待人員詢問。</p>`;
-  revealLookupResult('not-found');
+    <h3 class="not-found-title">${t('seating.notFoundTitle')}</h3>
+    <p class="not-found-copy">${t('seating.notFound')}</p>`;
+  lookupState = { type: 'not-found' };
+  if (reveal) revealLookupResult('not-found');
+  else lookupResult.className = 'lookup-result not-found show';
 }
 
 function setLookupLoading(loading) {
   lookupButton.disabled = loading;
   lookupButton.classList.toggle('loading', loading);
-  lookupButtonLabel.textContent = loading ? '查詢中...' : '查詢座位';
+  lookupButtonLabel.textContent = loading ? t('seating.loading') : t('seating.lookup');
   seatSearch.setAttribute('aria-busy', String(loading));
 }
 
@@ -1080,6 +1126,42 @@ const CAROUSEL_GESTURE_AXIS_RATIO = 1.2;
 const CAROUSEL_GESTURE_SLOP = 8;
 const CAROUSEL_SWIPE_DISTANCE = 40;
 const CAROUSEL_SWIPE_VELOCITY = 0.45;
+
+function galleryAlt(index) {
+  return i18n.value('gallery.imageAlt')?.[normalizeGalleryIndex(index)] || t('gallery.region');
+}
+
+function syncGalleryLanguage() {
+  if (!weddingCarousel) return;
+  weddingCarousel.setAttribute('aria-label', t('gallery.region'));
+  weddingCarousel.setAttribute('aria-roledescription', t('gallery.carouselRole'));
+  carouselSlides.forEach((slide, index) => {
+    const galleryIndex = Number(slide.querySelector('[data-gallery-index]')?.dataset.galleryIndex ?? index);
+    slide.setAttribute('aria-roledescription', t('gallery.slideRole'));
+    slide.setAttribute('aria-label', t('gallery.slideLabel', { current: index + 1, total: carouselSlides.length }));
+    const button = slide.querySelector('.gallery-media');
+    button?.setAttribute('aria-label', t('gallery.openPhoto', { current: index + 1 }));
+    const image = slide.querySelector('img');
+    if (image) image.alt = galleryAlt(galleryIndex);
+  });
+  [...carouselDots?.children ?? []].forEach((dot, index) => {
+    dot.setAttribute('aria-label', t('gallery.viewPhoto', { current: index + 1 }));
+  });
+  carouselPrevious?.setAttribute('aria-label', t('gallery.previous'));
+  carouselNext?.setAttribute('aria-label', t('gallery.next'));
+  carouselRestart?.setAttribute('aria-label', t('gallery.restart'));
+  lightbox?.setAttribute('aria-label', t('gallery.lightbox'));
+  lightboxClose?.setAttribute('aria-label', t('gallery.close'));
+  lightboxPrev?.setAttribute('aria-label', t('gallery.previousPhoto'));
+  lightboxNext?.setAttribute('aria-label', t('gallery.nextPhoto'));
+  if (!lightbox.hidden && lightboxImage.hasAttribute('src')) {
+    lightboxImage.alt = galleryAlt(currentGalleryIndex);
+    lightboxCounter.textContent = t('gallery.counter', {
+      current: currentGalleryIndex + 1,
+      total: galleryImages.length
+    });
+  }
+}
 
 function carouselIndex(index) {
   return (index + carouselSlides.length) % carouselSlides.length;
@@ -1504,7 +1586,7 @@ if (carouselIsEnabled) {
     const dot = document.createElement('button');
     dot.className = 'wedding-carousel__dot';
     dot.type = 'button';
-    dot.setAttribute('aria-label', `查看第 ${index + 1} 張婚紗照`);
+    dot.setAttribute('aria-label', t('gallery.viewPhoto', { current: index + 1 }));
     dot.setAttribute('aria-controls', 'gallery-carousel-viewport');
     dot.addEventListener('click', () => showCarouselSlide(index, true));
     carouselDots.append(dot);
@@ -1597,6 +1679,7 @@ if (carouselIsEnabled) {
   }
 
   setCarouselActiveState(0);
+  syncGalleryLanguage();
   window.requestAnimationFrame(() => positionCarousel(0, false));
 }
 
@@ -1693,8 +1776,11 @@ function showGalleryImage(index) {
   lightboxImage.height = image.height;
   lightboxImage.style.transform = '';
   lightboxImage.src = image.src;
-  lightboxImage.alt = '子靖與勤萱婚紗照';
-  lightboxCounter.textContent = `${String(currentGalleryIndex + 1).padStart(2, '0')} / ${galleryImages.length}`;
+  lightboxImage.alt = galleryAlt(currentGalleryIndex);
+  lightboxCounter.textContent = t('gallery.counter', {
+    current: currentGalleryIndex + 1,
+    total: galleryImages.length
+  });
   preloadAdjacentGalleryImages(currentGalleryIndex);
 }
 
@@ -2074,6 +2160,43 @@ document.addEventListener('keydown', (event) => {
     firstControl.focus();
   }
 });
+
+function syncDynamicLanguage() {
+  renderInviteModeLanguage();
+  updateWeddingCountdown();
+  document.querySelectorAll('[data-rsvp-deadline]').forEach((element) => {
+    element.textContent = t('seating.deadline');
+  });
+  document.querySelectorAll('[data-seat-lookup-open-date]').forEach((element) => {
+    element.textContent = t('seating.date');
+  });
+  if (VALID_INVITE_MODES.includes(inviteMode)) {
+    rsvpFormTitle.textContent = t(RSVP_MODE_CONFIG[inviteMode].titleKey);
+  }
+  setRsvpExpanded(rsvpToggle.getAttribute('aria-expanded') === 'true');
+  setRsvpSubmitting(rsvpSubmitting);
+  document.querySelectorAll('[data-error-key]').forEach((element) => {
+    if (element.dataset.errorKey) element.textContent = t(element.dataset.errorKey);
+  });
+  if (rsvpSubmitError.dataset.backendMessage) {
+    const message = rsvpSubmitError.dataset.backendMessage;
+    const translatedMessage = i18n.translatePhrase(message);
+    rsvpSubmitError.textContent = i18n.getLanguage() === 'en' && translatedMessage === message
+      ? t('rsvp.submitFailed')
+      : translatedMessage;
+  }
+  if (!rsvpSuccess.hidden) renderRsvpSuccess();
+  if (ONLINE_MEETING_URL.trim()) onlineMeetingButton.textContent = t('online.enter');
+  else onlineMeetingButton.textContent = t('online.unavailable');
+  setMenu(menuButton.getAttribute('aria-expanded') === 'true');
+  setLookupLoading(lookupButton.classList.contains('loading'));
+  if (lookupState?.type === 'success') showSeatResult(lookupState.name, lookupState.seat, false);
+  else if (lookupState?.type === 'not-found') showNotFound(false);
+  syncGalleryLanguage();
+}
+
+window.addEventListener('wedding:languagechange', syncDynamicLanguage);
+syncDynamicLanguage();
 
 if (!reducedMotionQuery.matches) {
   document.documentElement.classList.add('motion-enabled');
