@@ -501,18 +501,18 @@ html.motion-enabled .hero-image { will-change: transform, opacity; }
 .gallery-media img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .55s ease, transform .7s cubic-bezier(.22,1,.36,1); }
 .gallery-media.loaded img { opacity: 1; }
 .photo-index { position: absolute; z-index: 2; right: 18px; bottom: 15px; color: var(--color-text-inverse); font-size: 11px; letter-spacing: .12em; text-shadow: var(--shadow-text-xs); }
-.wedding-carousel { --carousel-stage-height: clamp(500px, 58vw, 720px); position: relative; width: 100%; max-width: 1680px; margin-inline: auto; }
-.wedding-carousel__viewport { position: relative; height: var(--carousel-stage-height); overflow: hidden; padding-inline: clamp(var(--space-4), 5vw, 72px); }
-.wedding-carousel__track { display: flex; align-items: center; gap: clamp(20px, 2.5vw, var(--space-5)); width: max-content; height: 100%; transition: transform 720ms var(--motion-ease); will-change: auto; }
+.wedding-carousel { --carousel-stage-height: clamp(500px, 58vw, 720px); --carousel-slide-width: min(78vw, 980px); position: relative; width: 100%; max-width: 1680px; margin-inline: auto; overflow-anchor: none; }
+.wedding-carousel__viewport { position: relative; width: 100%; height: var(--carousel-stage-height); min-height: var(--carousel-stage-height); max-height: var(--carousel-stage-height); overflow: hidden; padding-inline: clamp(var(--space-4), 5vw, 72px); contain: layout paint; overflow-anchor: none; }
+.wedding-carousel__track { display: flex; align-items: stretch; gap: clamp(20px, 2.5vw, var(--space-5)); width: max-content; height: 100%; transition: transform 720ms var(--motion-ease); will-change: auto; overflow-anchor: none; }
 .wedding-carousel__track.is-moving { will-change: transform; }
-.wedding-carousel__slide, .wedding-carousel__clone { display: flex; align-items: center; justify-content: center; flex: 0 0 min(78vw, 980px); min-width: 0; height: 100%; overflow: hidden; background: var(--color-surface-muted); border: var(--card-border); border-radius: var(--card-radius-lg); box-shadow: var(--shadow-md); opacity: .58; transform: scale(.965); transform-origin: center; transition: none; }
+.wedding-carousel__slide, .wedding-carousel__clone { display: flex; align-items: stretch; justify-content: center; flex: 0 0 var(--carousel-slide-width); min-width: 0; height: 100%; min-height: 0; overflow: hidden; background: var(--color-surface-muted); border: var(--card-border); border-radius: var(--card-radius-lg); box-shadow: var(--shadow-md); opacity: .58; transform: scale(.965); transform-origin: center; transition: none; overflow-anchor: none; }
 .wedding-carousel__slide.is-adjacent, .wedding-carousel__clone.is-adjacent { transition: opacity 320ms var(--motion-ease), transform 320ms var(--motion-ease); }
 .wedding-carousel__slide.is-before-active, .wedding-carousel__clone.is-before-active { transform-origin: right center; }
 .wedding-carousel__slide.is-after-active, .wedding-carousel__clone.is-after-active { transform-origin: left center; }
-:is(.wedding-carousel__slide, .wedding-carousel__clone).is-landscape { flex-basis: min(78vw, 980px); }
-:is(.wedding-carousel__slide, .wedding-carousel__clone).is-portrait { flex-basis: min(60vw, 720px); }
+:is(.wedding-carousel__slide, .wedding-carousel__clone).is-landscape { --carousel-slide-width: min(78vw, 980px); }
+:is(.wedding-carousel__slide, .wedding-carousel__clone).is-portrait { --carousel-slide-width: min(60vw, 720px); }
 .wedding-carousel__slide.is-active { opacity: 1; transform: scale(1); box-shadow: var(--shadow-lg); transition: opacity 680ms var(--motion-ease), transform 680ms var(--motion-ease), box-shadow var(--motion-normal) var(--motion-ease); }
-.wedding-carousel__media { display: block; flex: 1 1 auto; width: 100%; height: 100%; overflow: hidden; background: var(--color-surface-muted); border: 0; border-radius: 0; box-shadow: none; }
+.wedding-carousel__media { position: relative; display: block; flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: var(--color-surface-muted); border: 0; border-radius: 0; box-shadow: none; }
 .wedding-carousel__media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .wedding-carousel__arrow { position: absolute; z-index: 3; top: calc(50% - var(--space-5)); display: grid; place-items: center; width: 52px; height: 52px; padding: 0; color: var(--color-text-primary); background: var(--color-surface-glass); border: 1px solid var(--color-inverse-55); border-radius: 50%; box-shadow: var(--shadow-sm); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); cursor: pointer; transform: translateY(-50%); transition: color var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease); }
 .wedding-carousel__arrow--previous { left: clamp(var(--space-4), 4vw, var(--space-7)); }
@@ -533,7 +533,8 @@ html.motion-enabled .hero-image { will-change: transform, opacity; }
 }
 
 .lightbox[hidden] { display: none; }
-.lightbox { position: fixed; z-index: 500; inset: 0; display: grid; grid-template-columns: 80px minmax(0,1fr) 80px; align-items: center; padding: 30px; color: var(--color-text-inverse); background: var(--overlay-dark); }
+.lightbox { position: fixed; z-index: 500; inset: 0; display: grid; grid-template-columns: 80px minmax(0,1fr) 80px; align-items: center; padding: 30px; color: var(--color-text-inverse); background: var(--overlay-dark); overflow-anchor: none; }
+.lightbox * { overflow-anchor: none; }
 html.lightbox-open, body.lightbox-open { overflow: hidden; }
 .lightbox-stage { min-width: 0; height: calc(100vh - 100px); height: calc(100svh - 100px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; touch-action: pan-y; overscroll-behavior-x: none; }
 .lightbox-image { display: block; max-width: 100%; max-height: calc(100% - 32px); width: auto; height: auto; object-fit: contain; box-shadow: var(--shadow-lg); -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -963,8 +964,8 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .landing-dialog-card { padding: var(--space-card-mobile); }
   .brand { font-size: 20px; }
   .menu-toggle { display: block; width: 48px; height: 48px; }
-  .nav-links { position: fixed; inset: var(--header-height) 0 auto; height: calc(100svh - var(--header-height)); overflow-y: auto; flex-direction: column; align-items: flex-start; gap: 0; padding: var(--space-4) var(--space-4) var(--space-6); color: var(--color-text-secondary); background: var(--color-bg-glass); visibility: hidden; opacity: 0; transform: translateY(-8px); transition: opacity 360ms var(--motion-ease), transform 360ms var(--motion-ease), visibility 360ms; }
-  .nav-links.open { visibility: visible; opacity: 1; transform: translateY(0); }
+  .nav-links { position: fixed; inset: var(--header-height) 0 auto; height: calc(100svh - var(--header-height)); overflow-y: auto; flex-direction: column; align-items: flex-start; gap: 0; padding: var(--space-4) var(--space-4) var(--space-6); color: var(--color-text-secondary); background: var(--color-bg-glass); visibility: hidden; opacity: 0; pointer-events: none; transform: translateY(-8px); transition: opacity 360ms var(--motion-ease), transform 360ms var(--motion-ease), visibility 360ms; }
+  .nav-links.open { visibility: visible; opacity: 1; pointer-events: auto; transform: translateY(0); }
   .nav-links a { width: 100%; padding: 16px 4px; border-bottom: 1px solid var(--line); font-size: 17px; line-height: 1.5; white-space: nowrap; opacity: 0; transform: translateY(-6px); transition: color var(--motion-fast) var(--motion-ease), opacity 320ms var(--motion-ease), transform 320ms var(--motion-ease); }
   .nav-links.open a { opacity: 1; transform: translateY(0); }
   .nav-links.open a:nth-child(2) { transition-delay: 40ms; }
@@ -1042,19 +1043,20 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .lookup-button { width: 100%; }
   .lookup-result.success, .lookup-result.not-found { padding: var(--card-padding-large); }
   .story-gallery { padding: var(--section-spacing) 0; }
-  .wedding-carousel { --carousel-stage-height: clamp(360px, 108vw, 540px); --carousel-mobile-gutter: clamp(40px, 12vw, 52px); }
-  .wedding-carousel__viewport { overflow-x: auto; overflow-y: hidden; padding-inline: 0; scroll-snap-type: x mandatory; scroll-padding-inline: var(--carousel-mobile-gutter); scrollbar-width: none; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+  .wedding-carousel { --carousel-stage-height: clamp(430px, 112vw, 580px); --carousel-mobile-gutter: clamp(40px, 12vw, 52px); }
+  .wedding-carousel__viewport { overflow-x: auto; overflow-y: hidden; padding-inline: 0; scroll-snap-type: x mandatory; scroll-padding-inline: var(--carousel-mobile-gutter); scrollbar-width: none; overscroll-behavior-x: contain; touch-action: pan-y pinch-zoom; -webkit-overflow-scrolling: touch; }
+  .wedding-carousel__viewport.is-dragging { scroll-snap-type: none; }
   .wedding-carousel__viewport::-webkit-scrollbar { display: none; }
   .wedding-carousel__track { gap: var(--space-1); padding-inline: var(--carousel-mobile-gutter); transform: none; transition: none; will-change: auto; }
-  .wedding-carousel__slide, .wedding-carousel__clone, :is(.wedding-carousel__slide, .wedding-carousel__clone).is-landscape { flex-basis: 86vw; scroll-snap-align: center; scroll-snap-stop: normal; border-radius: var(--card-radius-md); transform: none; }
-  :is(.wedding-carousel__slide, .wedding-carousel__clone).is-portrait { flex-basis: 80vw; }
+  .wedding-carousel__slide, .wedding-carousel__clone, :is(.wedding-carousel__slide, .wedding-carousel__clone).is-landscape { --carousel-slide-width: min(88vw, 430px); scroll-snap-align: center; scroll-snap-stop: normal; border-radius: var(--card-radius-md); transform: none; }
+  :is(.wedding-carousel__slide, .wedding-carousel__clone).is-portrait { --carousel-slide-width: min(82vw, 400px); }
   .wedding-carousel__media img[src$="02-thumb.jpg"] { object-position: 62% center; }
   .wedding-carousel__media img[src$="10-thumb.jpg"] { object-position: 38% center; }
   .wedding-carousel__media img[src$="11-thumb.jpg"] { object-position: 60% center; }
   :is(.wedding-carousel__slide, .wedding-carousel__clone, .wedding-carousel__slide.is-active, .wedding-carousel__slide.is-adjacent, .wedding-carousel__clone.is-adjacent) { filter: none; transform: none; transition: none; }
   .wedding-carousel__arrow { display: none; }
   .wedding-carousel__controls { gap: var(--space-2); margin-top: var(--space-4); padding-inline: var(--space-3); }
-  .wedding-carousel__media { touch-action: pan-x pan-y; }
+  .wedding-carousel__media { touch-action: pan-y pinch-zoom; }
   .lightbox { grid-template-columns: 1fr; padding: 18px 12px; }
   .lightbox-stage { height: calc(100svh - 70px); }
   .lightbox-nav { position: absolute; z-index: 2; top: 50%; width: 48px; height: 48px; transform: translateY(-50%); }
@@ -1070,6 +1072,14 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .share-button { width: 100%; }
   .guide-copy .button { width: 100%; justify-content: center; }
   .delay { transition-delay: 0s; }
+}
+
+@media (max-width: 430px) {
+  .wedding-carousel { --carousel-stage-height: clamp(410px, 118vw, 540px); }
+}
+
+@media (max-width: 375px) {
+  .wedding-carousel { --carousel-stage-height: clamp(390px, 120vw, 500px); }
 }
 
 @media (max-width: 768px) {

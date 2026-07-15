@@ -844,7 +844,6 @@ const unifiedRevealTargets = document.querySelectorAll([
   '.page-section .glass-card',
   '.page-section .share-step',
   '.story-gallery .story-title',
-  '.story-gallery .wedding-carousel',
   '.site-footer'
 ].join(','));
 
@@ -1052,6 +1051,10 @@ const carouselIsEnabled = Boolean(
   && VALID_INVITE_MODES.includes(inviteMode)
   && !weddingCarousel.closest('[hidden]')
 );
+if (weddingCarousel) {
+  weddingCarousel.dataset.revealed = 'true';
+  weddingCarousel.classList.add('is-visible');
+}
 let carouselLeadingClone;
 let carouselTrailingClone;
 let carouselActiveIndex = 0;
@@ -1061,22 +1064,52 @@ let carouselPointerInside = false;
 let carouselFocusInside = false;
 let carouselInView = false;
 let carouselScrollTicking = false;
-let carouselLayoutTicking = false;
+let isUpdatingCarouselMetrics = false;
 let carouselRequestToken = 0;
 let carouselMotionTimer = null;
 let lightboxCarouselState = null;
 let lightboxScrollX = 0;
 let isLightboxClosing = false;
 let isRestoringScroll = false;
-let carouselLayoutPending = false;
+let carouselMetricsPending = false;
+let carouselFrozenForLightbox = false;
+let carouselGesture = null;
+let suppressCarouselClick = false;
+let suppressCarouselClickUntil = 0;
+const CAROUSEL_GESTURE_AXIS_RATIO = 1.2;
+const CAROUSEL_GESTURE_SLOP = 8;
+const CAROUSEL_SWIPE_DISTANCE = 40;
+const CAROUSEL_SWIPE_VELOCITY = 0.45;
 
 function carouselIndex(index) {
   return (index + carouselSlides.length) % carouselSlides.length;
 }
 
+function getCarouselLayoutMetrics() {
+  if (!weddingCarousel || !carouselViewport || !carouselTrack) return null;
+  const activeSlide = carouselSlides[carouselActiveIndex];
+  return {
+    activeIndex: carouselActiveIndex,
+    scrollY: window.scrollY,
+    sectionHeight: weddingCarousel.closest('#gallery')?.getBoundingClientRect().height ?? 0,
+    viewportHeight: carouselViewport.getBoundingClientRect().height,
+    trackHeight: carouselTrack.getBoundingClientRect().height,
+    slideHeight: activeSlide?.getBoundingClientRect().height ?? 0,
+    documentHeight: document.documentElement.scrollHeight
+  };
+}
+
+function debugCarouselMetrics(label) {
+  if (!isLocalDevelopmentHost()) return;
+  const metrics = getCarouselLayoutMetrics();
+  if (metrics) console.table({ event: label, ...metrics });
+}
+
 function createCarouselClone(slide) {
   const clone = slide.cloneNode(true);
   clone.className = 'wedding-carousel__clone';
+  if (slide.classList.contains('is-portrait')) clone.classList.add('is-portrait');
+  else clone.classList.add('is-landscape');
   clone.removeAttribute('role');
   clone.removeAttribute('aria-roledescription');
   clone.removeAttribute('aria-label');
@@ -1091,6 +1124,12 @@ function createCarouselClone(slide) {
   image.removeAttribute('fetchpriority');
   return clone;
 }
+
+carouselSlides.forEach((slide) => {
+  setCarouselImageOrientation(slide.querySelector('img'), false);
+  slide.dataset.revealed = 'true';
+  slide.classList.add('is-revealed');
+});
 
 if (carouselIsEnabled) {
   carouselLeadingClone = createCarouselClone(carouselSlides[carouselSlides.length - 1]);
@@ -1152,7 +1191,8 @@ function positionCarousel(index, smooth = true) {
     const left = slide.offsetLeft - ((carouselViewport.clientWidth - slide.offsetWidth) / 2);
     carouselViewport.scrollTo({
       left,
-      behavior: smooth && !reducedMotionQuery.matches ? 'smooth' : 'auto'
+      top: 0,
+      behavior: 'auto'
     });
     return;
   }
@@ -1175,6 +1215,8 @@ function canAutoplayCarousel() {
     && !carouselUserPaused
     && !carouselPointerInside
     && !carouselFocusInside
+    && !carouselFrozenForLightbox
+    && lightbox.hidden
     && !document.hidden
     && !reducedMotionQuery.matches;
 }
@@ -1195,16 +1237,19 @@ function pauseCarouselForUser() {
   scheduleCarouselAutoplay();
 }
 
-function showCarouselSlide(index, userInitiated = false) {
+function showCarouselSlide(index, userInitiated = false, animate = true) {
+  if (carouselFrozenForLightbox) return;
   if (userInitiated) pauseCarouselForUser();
   const targetIndex = carouselIndex(index);
   const wrapped = index < 0 || index >= carouselSlides.length;
   const image = carouselSlides[targetIndex]?.querySelector('img');
   const requestToken = ++carouselRequestToken;
   const activate = () => {
-    if (requestToken !== carouselRequestToken) return;
+    if (requestToken !== carouselRequestToken || carouselFrozenForLightbox) return;
+    debugCarouselMetrics('slide change before');
     setCarouselActiveState(targetIndex);
-    positionCarousel(carouselActiveIndex, !wrapped);
+    positionCarousel(carouselActiveIndex, animate && !wrapped);
+    debugCarouselMetrics('slide change after');
     scheduleCarouselAutoplay();
   };
 
@@ -1218,8 +1263,165 @@ function showCarouselSlide(index, userInitiated = false) {
   image.addEventListener('error', activate, { once: true });
 }
 
+function beginCarouselGesture(point, source, pointerId = null) {
+  if (!carouselMobileQuery.matches || carouselFrozenForLightbox || !lightbox.hidden) return;
+  carouselGesture = {
+    source,
+    pointerId,
+    startX: point.clientX,
+    startY: point.clientY,
+    currentX: point.clientX,
+    currentY: point.clientY,
+    startTime: Date.now(),
+    startScrollLeft: carouselViewport.scrollLeft,
+    startIndex: carouselActiveIndex,
+    axis: null
+  };
+  pauseCarouselForUser();
+  debugCarouselMetrics('swipe start');
+}
+
+function updateCarouselGesture(point, event) {
+  if (!carouselGesture) return;
+  carouselGesture.currentX = point.clientX;
+  carouselGesture.currentY = point.clientY;
+  const distanceX = point.clientX - carouselGesture.startX;
+  const distanceY = point.clientY - carouselGesture.startY;
+  const absoluteX = Math.abs(distanceX);
+  const absoluteY = Math.abs(distanceY);
+
+  if (!carouselGesture.axis && Math.max(absoluteX, absoluteY) >= CAROUSEL_GESTURE_SLOP) {
+    if (absoluteX > absoluteY * CAROUSEL_GESTURE_AXIS_RATIO) {
+      carouselGesture.axis = 'horizontal';
+      carouselViewport.classList.add('is-dragging');
+    } else if (absoluteY > absoluteX * CAROUSEL_GESTURE_AXIS_RATIO) {
+      carouselGesture.axis = 'vertical';
+    }
+  }
+
+  if (carouselGesture.axis !== 'horizontal') return;
+  if (event.cancelable) event.preventDefault();
+  carouselViewport.scrollLeft = carouselGesture.startScrollLeft - distanceX;
+  suppressCarouselClick = true;
+}
+
+function finishCarouselGesture(point, cancelled = false) {
+  if (!carouselGesture) return;
+  const gesture = carouselGesture;
+  carouselGesture = null;
+  carouselViewport.classList.remove('is-dragging');
+  const currentPoint = point ?? { clientX: gesture.currentX, clientY: gesture.currentY };
+  const distanceX = currentPoint.clientX - gesture.startX;
+  const distanceY = currentPoint.clientY - gesture.startY;
+  const elapsed = Date.now() - gesture.startTime;
+  const velocityX = Math.abs(distanceX) / Math.max(elapsed, 1);
+  const isHorizontal = gesture.axis === 'horizontal'
+    || Math.abs(distanceX) > Math.abs(distanceY) * CAROUSEL_GESTURE_AXIS_RATIO;
+  const shouldChange = Math.abs(distanceX) >= CAROUSEL_SWIPE_DISTANCE
+    || velocityX > CAROUSEL_SWIPE_VELOCITY;
+
+  if (isHorizontal) {
+    suppressCarouselClick = true;
+    suppressCarouselClickUntil = performance.now() + 500;
+  }
+
+  if (!cancelled && isHorizontal && shouldChange) {
+    showCarouselSlide(gesture.startIndex + (distanceX < 0 ? 1 : -1), true, false);
+  } else if (isHorizontal) {
+    setCarouselActiveState(gesture.startIndex);
+    positionCarousel(gesture.startIndex, false);
+  }
+}
+
+function cancelCarouselGesture() {
+  finishCarouselGesture(null, true);
+}
+
+function initializeCarouselGestures() {
+  carouselViewport.addEventListener('click', (event) => {
+    if (!suppressCarouselClick || performance.now() > suppressCarouselClickUntil) {
+      suppressCarouselClick = false;
+      return;
+    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    suppressCarouselClick = false;
+    suppressCarouselClickUntil = 0;
+  }, true);
+
+  const useTouchEvents = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (!useTouchEvents && 'PointerEvent' in window) {
+    carouselViewport.addEventListener('pointerdown', (event) => {
+      if (!event.isPrimary || !['touch', 'pen'].includes(event.pointerType)) return;
+      beginCarouselGesture({ clientX: event.clientX, clientY: event.clientY }, 'pointer', event.pointerId);
+    }, { passive: true });
+
+    carouselViewport.addEventListener('pointermove', (event) => {
+      if (!carouselGesture
+        || carouselGesture.source !== 'pointer'
+        || carouselGesture.pointerId !== event.pointerId) return;
+      updateCarouselGesture({ clientX: event.clientX, clientY: event.clientY }, event);
+      if (carouselGesture?.axis === 'horizontal' && !carouselViewport.hasPointerCapture(event.pointerId)) {
+        try {
+          carouselViewport.setPointerCapture(event.pointerId);
+        } catch {
+          // Pointer capture is optional on older mobile Safari versions.
+        }
+      }
+    }, { passive: false });
+
+    carouselViewport.addEventListener('pointerup', (event) => {
+      if (!carouselGesture
+        || carouselGesture.source !== 'pointer'
+        || carouselGesture.pointerId !== event.pointerId) return;
+      finishCarouselGesture({ clientX: event.clientX, clientY: event.clientY });
+    }, { passive: true });
+
+    carouselViewport.addEventListener('pointercancel', (event) => {
+      if (!carouselGesture
+        || carouselGesture.source !== 'pointer'
+        || carouselGesture.pointerId !== event.pointerId) return;
+      cancelCarouselGesture();
+    }, { passive: true });
+    return;
+  }
+
+  const findCarouselTouch = (touchList) => Array.from(touchList).find(
+    (touch) => touch.identifier === carouselGesture?.pointerId
+  );
+
+  carouselViewport.addEventListener('touchstart', (event) => {
+    if (event.touches.length !== 1) {
+      cancelCarouselGesture();
+      return;
+    }
+    const touch = event.touches[0];
+    beginCarouselGesture({ clientX: touch.clientX, clientY: touch.clientY }, 'touch', touch.identifier);
+  }, { passive: true });
+
+  carouselViewport.addEventListener('touchmove', (event) => {
+    const touch = findCarouselTouch(event.touches);
+    if (!touch) return;
+    updateCarouselGesture({ clientX: touch.clientX, clientY: touch.clientY }, event);
+  }, { passive: false });
+
+  carouselViewport.addEventListener('touchend', (event) => {
+    const touch = findCarouselTouch(event.changedTouches);
+    if (!touch) return;
+    finishCarouselGesture({ clientX: touch.clientX, clientY: touch.clientY });
+  }, { passive: true });
+
+  carouselViewport.addEventListener('touchcancel', cancelCarouselGesture, { passive: true });
+}
+
 function updateCarouselFromScroll() {
-  if (!carouselMobileQuery.matches || carouselScrollTicking || isLightboxClosing || isRestoringScroll || !lightbox.hidden) return;
+  if (!carouselMobileQuery.matches
+    || carouselScrollTicking
+    || carouselGesture
+    || carouselFrozenForLightbox
+    || isLightboxClosing
+    || isRestoringScroll
+    || !lightbox.hidden) return;
   carouselScrollTicking = true;
   window.requestAnimationFrame(() => {
     const viewportCenter = carouselViewport.scrollLeft + (carouselViewport.clientWidth / 2);
@@ -1244,32 +1446,45 @@ function updateCarouselFromScroll() {
   });
 }
 
-function requestCarouselLayout() {
+function updateCarouselMetrics() {
   debugCarouselLifecycle('carousel refresh called', {
     activeIndex: carouselActiveIndex,
     isLightboxClosing,
     isRestoringScroll
   });
-  if (isLightboxClosing || isRestoringScroll || !lightbox.hidden) {
-    carouselLayoutPending = true;
+  if (carouselFrozenForLightbox || isLightboxClosing || isRestoringScroll || !lightbox.hidden) {
+    carouselMetricsPending = true;
     return;
   }
-  if (carouselLayoutTicking) return;
-  carouselLayoutTicking = true;
+  if (isUpdatingCarouselMetrics) return;
+  isUpdatingCarouselMetrics = true;
   window.requestAnimationFrame(() => {
+    if (carouselFrozenForLightbox || isLightboxClosing || isRestoringScroll || !lightbox.hidden) {
+      carouselMetricsPending = true;
+      isUpdatingCarouselMetrics = false;
+      return;
+    }
     positionCarousel(carouselActiveIndex, false);
-    carouselLayoutTicking = false;
+    isUpdatingCarouselMetrics = false;
+    debugCarouselMetrics('metrics updated');
   });
 }
 
-function setCarouselImageOrientation(image) {
-  if (!image.naturalWidth || !image.naturalHeight) return;
+function setCarouselImageOrientation(image, updateMetrics = true) {
+  if (!image) return false;
+  const imageWidth = image.naturalWidth || Number(image.getAttribute('width'));
+  const imageHeight = image.naturalHeight || Number(image.getAttribute('height'));
+  if (!imageWidth || !imageHeight) return false;
   const slide = image.closest('.wedding-carousel__slide, .wedding-carousel__clone');
-  if (!slide) return;
-  const portrait = image.naturalHeight > image.naturalWidth;
+  if (!slide) return false;
+  const portrait = imageHeight > imageWidth;
+  const orientationChanged = portrait
+    ? !slide.classList.contains('is-portrait')
+    : !slide.classList.contains('is-landscape');
   slide.classList.toggle('is-portrait', portrait);
   slide.classList.toggle('is-landscape', !portrait);
-  requestCarouselLayout();
+  if (orientationChanged && updateMetrics) updateCarouselMetrics();
+  return orientationChanged;
 }
 
 [...carouselTrack.querySelectorAll('img')].forEach((image) => {
@@ -1277,6 +1492,7 @@ function setCarouselImageOrientation(image) {
   const markLoaded = () => {
     setCarouselImageOrientation(image);
     image.closest('.gallery-media').classList.add('loaded');
+    debugCarouselMetrics('image load');
     requestScrollUpdate();
   };
   if (image.complete && image.naturalWidth) markLoaded();
@@ -1302,7 +1518,7 @@ if (carouselIsEnabled) {
     scheduleCarouselAutoplay();
   });
 
-  carouselViewport.addEventListener('pointerdown', pauseCarouselForUser, { passive: true });
+  initializeCarouselGestures();
   carouselViewport.addEventListener('scroll', updateCarouselFromScroll, { passive: true });
   weddingCarousel.addEventListener('mouseenter', () => {
     carouselPointerInside = true;
@@ -1342,10 +1558,10 @@ if (carouselIsEnabled) {
 
   document.addEventListener('visibilitychange', scheduleCarouselAutoplay);
   reducedMotionQuery.addEventListener?.('change', () => {
-    requestCarouselLayout();
+    updateCarouselMetrics();
     scheduleCarouselAutoplay();
   });
-  carouselMobileQuery.addEventListener?.('change', requestCarouselLayout);
+  carouselMobileQuery.addEventListener?.('change', updateCarouselMetrics);
   window.addEventListener('resize', () => {
     debugCarouselLifecycle('resize fired', {
       width: window.innerWidth,
@@ -1353,7 +1569,7 @@ if (carouselIsEnabled) {
       isLightboxClosing,
       isRestoringScroll
     });
-    requestCarouselLayout();
+    updateCarouselMetrics();
   }, { passive: true });
   window.visualViewport?.addEventListener('resize', () => {
     debugCarouselLifecycle('visualViewport resize fired', {
@@ -1363,8 +1579,13 @@ if (carouselIsEnabled) {
       isRestoringScroll
     });
   }, { passive: true });
-  if ('ResizeObserver' in window) new ResizeObserver(requestCarouselLayout).observe(carouselViewport);
-  document.fonts?.ready.then(requestCarouselLayout);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      debugCarouselMetrics('ResizeObserver callback');
+      updateCarouselMetrics();
+    }).observe(carouselViewport);
+  }
+  document.fonts?.ready.then(updateCarouselMetrics);
   if ('IntersectionObserver' in window) {
     const carouselVisibilityObserver = new IntersectionObserver(([entry]) => {
       carouselInView = entry.isIntersecting;
@@ -1575,7 +1796,10 @@ async function openLightbox(index, trigger) {
   if (!lightbox.hidden || isLightboxOpening) return;
   const normalizedIndex = normalizeGalleryIndex(index);
   const requestToken = ++lightboxImageRequestToken;
+  const autoplayWasRunning = carouselAutoplayTimer !== null || canAutoplayCarousel();
   isLightboxOpening = true;
+  carouselFrozenForLightbox = true;
+  carouselRequestToken += 1;
   lastGalleryTrigger = trigger;
   isLightboxClosing = false;
   isRestoringScroll = false;
@@ -1584,7 +1808,8 @@ async function openLightbox(index, trigger) {
     mobileLayout: carouselMobileQuery.matches,
     trackTransform: carouselTrack.style.transform,
     scrollLeft: carouselViewport.scrollLeft,
-    autoplayWasScheduled: carouselAutoplayTimer !== null
+    focusWasInside: carouselFocusInside,
+    autoplayWasScheduled: autoplayWasRunning
   } : null;
   window.clearTimeout(carouselAutoplayTimer);
   carouselAutoplayTimer = null;
@@ -1595,12 +1820,18 @@ async function openLightbox(index, trigger) {
     const autoplayWasScheduled = lightboxCarouselState?.autoplayWasScheduled;
     lightboxCarouselState = null;
     isLightboxOpening = false;
+    carouselFrozenForLightbox = false;
+    if (carouselMetricsPending) {
+      carouselMetricsPending = false;
+      updateCarouselMetrics();
+    }
     if (autoplayWasScheduled) scheduleCarouselAutoplay();
     return;
   }
   if (requestToken !== lightboxImageRequestToken) {
     lightboxCarouselState = null;
     isLightboxOpening = false;
+    carouselFrozenForLightbox = false;
     return;
   }
 
@@ -1612,6 +1843,7 @@ async function openLightbox(index, trigger) {
     savedScrollY: lightboxScrollY,
     activeIndex: carouselActiveIndex
   });
+  debugCarouselMetrics('lightbox open');
   const bodyStyle = document.body.style;
   lightboxBodyInlineStyles = {
     position: bodyStyle.position,
@@ -1642,16 +1874,17 @@ function restorePagePositionAfterLightbox() {
   const root = document.documentElement;
   const previousScrollBehavior = root.style.scrollBehavior;
   root.style.scrollBehavior = 'auto';
-  root.getBoundingClientRect();
-  window.scrollTo({ top: lightboxScrollY, left: lightboxScrollX, behavior: 'auto' });
 
-  if (lightboxCarouselState && carouselActiveIndex === lightboxCarouselState.activeIndex) {
+  if (lightboxCarouselState) {
+    setCarouselActiveState(lightboxCarouselState.activeIndex);
     if (lightboxCarouselState.mobileLayout === carouselMobileQuery.matches) {
       if (carouselMobileQuery.matches) carouselViewport.scrollLeft = lightboxCarouselState.scrollLeft;
       else carouselTrack.style.transform = lightboxCarouselState.trackTransform;
     }
     positionCarousel(lightboxCarouselState.activeIndex, false);
   }
+  root.getBoundingClientRect();
+  window.scrollTo({ top: lightboxScrollY, left: lightboxScrollX, behavior: 'auto' });
 
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
@@ -1663,10 +1896,6 @@ function restorePagePositionAfterLightbox() {
         }
       }
 
-      if (Math.abs(window.scrollY - lightboxScrollY) > 1 || Math.abs(window.scrollX - lightboxScrollX) > 1) {
-        window.scrollTo({ top: lightboxScrollY, left: lightboxScrollX, behavior: 'auto' });
-      }
-
       debugCarouselLifecycle('lightbox close restored', {
         activeIndex: carouselActiveIndex,
         expectedActiveIndex: lightboxCarouselState?.activeIndex,
@@ -1676,13 +1905,17 @@ function restorePagePositionAfterLightbox() {
       });
 
       const autoplayWasScheduled = lightboxCarouselState?.autoplayWasScheduled;
+      const focusWasInside = lightboxCarouselState?.focusWasInside ?? false;
       root.style.scrollBehavior = previousScrollBehavior;
       isRestoringScroll = false;
       isLightboxClosing = false;
+      carouselFrozenForLightbox = false;
+      carouselFocusInside = focusWasInside;
+      debugCarouselMetrics('lightbox close restored');
       lightboxCarouselState = null;
-      if (carouselLayoutPending) {
-        carouselLayoutPending = false;
-        requestCarouselLayout();
+      if (carouselMetricsPending) {
+        carouselMetricsPending = false;
+        updateCarouselMetrics();
       }
       if (autoplayWasScheduled) scheduleCarouselAutoplay();
     });
