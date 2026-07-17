@@ -1030,7 +1030,7 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .hero-schedule span + span::before { display: none; }
   .page-section { padding: var(--section-spacing) 0; }
   .rsvp-card { padding: var(--card-padding-large); }
-  .rsvp-intro br, .rsvp-deadline-note br { display: none; }
+  html[lang="zh-Hant-TW"] :is(.rsvp-intro, .rsvp-deadline-note) br { display: none; }
   .rsvp-toggle, .rsvp-submit, .rsvp-edit, .rsvp-online-link { width: 100%; }
   .rsvp-form-grid, .rsvp-options, .rsvp-counts { grid-template-columns: 1fr; }
   .rsvp-field input, .rsvp-field textarea { font-size: 16px; }
@@ -1099,7 +1099,7 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .lightbox-close { top: 14px; right: 14px; width: 48px; height: 48px; }
   .share-card { min-height: 0; padding: var(--card-padding-sm); }
   .share-mark { width: 52px; height: 52px; }
-  .share-intro br { display: none; }
+  html[lang="zh-Hant-TW"] .share-intro br { display: none; }
   .share-steps { grid-template-columns: 1fr; margin: 0 0 var(--space-6); }
   .share-step { padding: var(--space-4); }
   .share-step + .share-step { border-top: 1px solid var(--color-border); border-left: 0; }
@@ -1108,16 +1108,172 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .delay { transition-delay: 0s; }
 }
 
+@media (max-width: 360px) {
+  :root { --card-padding-sm: clamp(18px, 6vw, 22px); }
+
+  .section-header__title { font-size: clamp(32px, 10vw, 38px); }
+
+  :is(.button, .lookup-button, .landing-help-button, .dialog-close-button) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (min-width: 821px) {
   html[data-language="en"] .nav-links { gap: clamp(12px, 1.6vw, 22px); }
   html[data-language="en"] .nav-link { font-size: 14px; }
 }
 
+/* Language-aware wrapping keeps CJK punctuation and Latin words intact. */
+.no-break { white-space: nowrap; }
+
+html[lang="zh-Hant-TW"] body {
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+html[lang="en"] body {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
 html[data-language="en"] :is(.button, .rsvp-options span, .faq-question, .section-header__description) {
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 html[data-language="en"] .button { text-align: center; justify-content: center; }
+
+html[lang="en"] :is(
+  .button,
+  .lookup-button,
+  .landing-help-button,
+  .dialog-close-button,
+  .nav-link,
+  .language-switch button,
+  .rsvp-options span,
+  .faq-question,
+  h1,
+  h2,
+  h3
+) { hyphens: none; }
+
+:is(
+  .hero h1,
+  .landing-title,
+  .section-header__title,
+  .invitation-note-wrap h2,
+  .wedding-venue-copy h3,
+  .online-attendance-copy h3,
+  .ceremony-note h3,
+  .ceremony-parking-copy h3,
+  .guide-copy h3,
+  .banquet-parking-title,
+  .rsvp-form h3,
+  .rsvp-success h3,
+  .seat-lookup-unavailable h3,
+  .faq-question,
+  .site-footer__brand
+) {
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+:is(
+  .section-header__description,
+  .invitation-note-copy,
+  .gift-note-copy,
+  .rsvp-deadline-note,
+  .rsvp-duration,
+  .rsvp-field-description,
+  .rsvp-error,
+  .rsvp-submit-error,
+  .rsvp-success p,
+  .ceremony-note p,
+  .ceremony-parking-copy > p:not(.ceremony-parking-walk),
+  .ceremony-parking-reminder,
+  .guide-description,
+  .banquet-parking-description,
+  .wedding-venue-copy address,
+  .online-attendance-copy > span,
+  .online-schedule span,
+  .online-schedule small,
+  .lookup-hint,
+  .lookup-result,
+  .share-step p,
+  .share-note,
+  .faq-list details > p,
+  .site-footer__meta
+) {
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+address {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-break: strict;
+  text-wrap: pretty;
+}
+
+html[lang="en"] address { hyphens: auto; }
+
+:is(
+  .hero-date,
+  .landing-date,
+  .hero-schedule span,
+  .fact-card time,
+  .online-schedule time,
+  .ceremony-parking-walk,
+  .language-switch button,
+  .photo-index,
+  .lightbox-counter,
+  .site-footer__meta
+) { white-space: nowrap; }
+
+html[lang="zh-Hant-TW"] .fact-card strong { white-space: nowrap; }
+
+:is(
+  .rsvp-form-grid > *,
+  .rsvp-question,
+  .rsvp-options,
+  .rsvp-options label,
+  .rsvp-options span,
+  .rsvp-counter,
+  .rsvp-counter > div,
+  .wedding-venue-copy,
+  .online-attendance-copy,
+  .ceremony-parking-copy,
+  .guide-copy,
+  .banquet-parking-body,
+  .share-step,
+  .faq-list summary,
+  .faq-question
+) { min-width: 0; }
+
+:is(.button, .lookup-button, .landing-help-button, .dialog-close-button) {
+  min-height: 44px;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.faq-question {
+  display: block;
+  padding-right: var(--space-2);
+}
+
+.faq-list details[open] > p { max-height: 520px; }
+
+.online-schedule > div { grid-template-columns: max-content minmax(0, 1fr); }
 
 @media (max-width: 430px) {
   .wedding-carousel { --carousel-stage-height: clamp(410px, 118vw, 540px); }
