@@ -1243,14 +1243,35 @@ if (carouselIsEnabled) {
 
 function primeCarouselImages(index) {
   if (!carouselSlides.length) return;
-  [index - 1, index, index + 1].forEach((candidate) => {
+  [index - 1, index, index + 1, index + 2].forEach((candidate) => {
     const image = carouselSlides[carouselIndex(candidate)].querySelector('img');
-    if (image) image.loading = 'eager';
+    if (!image) return;
+    image.loading = 'eager';
+    if (image.dataset.decoded === 'true'
+      || image.dataset.decoding === 'true'
+      || typeof image.decode !== 'function') return;
+    image.dataset.decoding = 'true';
+    image.decode().then(() => {
+      image.dataset.decoded = 'true';
+    }).catch(() => {
+      // The load event remains the fallback for browsers with partial decode support.
+    }).finally(() => {
+      delete image.dataset.decoding;
+    });
   });
 }
 
 function setCarouselActiveState(index) {
-  carouselActiveIndex = carouselIndex(index);
+  const normalizedIndex = carouselIndex(index);
+  const nextSlide = carouselSlides[normalizedIndex];
+  const nextDot = carouselDots.children[normalizedIndex];
+  if (carouselActiveIndex === normalizedIndex
+    && nextSlide?.classList.contains('is-active')
+    && nextDot?.classList.contains('is-active')) {
+    primeCarouselImages(normalizedIndex);
+    return;
+  }
+  carouselActiveIndex = normalizedIndex;
   const previousIndex = carouselIndex(carouselActiveIndex - 1);
   const nextIndex = carouselIndex(carouselActiveIndex + 1);
   carouselSlides.forEach((slide, slideIndex) => {
@@ -1702,6 +1723,7 @@ function setCarouselImageOrientation(image, updateMetrics = true) {
   if (!image) return;
   const markLoaded = () => {
     setCarouselImageOrientation(image);
+    image.dataset.loaded = 'true';
     image.closest('.gallery-media').classList.add('loaded');
     debugCarouselMetrics('image load');
     requestScrollUpdate();

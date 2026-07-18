@@ -1087,7 +1087,11 @@ html.motion-enabled .section-title.reveal.is-visible > :nth-child(3) { transitio
   .wedding-carousel__media img[src$="02-thumb.jpg"] { object-position: 62% center; }
   .wedding-carousel__media img[src$="10-thumb.jpg"] { object-position: 38% center; }
   .wedding-carousel__media img[src$="11-thumb.jpg"] { object-position: 60% center; }
-  :is(.wedding-carousel__slide, .wedding-carousel__clone, .wedding-carousel__slide.is-active, .wedding-carousel__slide.is-adjacent, .wedding-carousel__clone.is-adjacent) { filter: none; transform: none; transition: none; }
+  :is(.wedding-carousel__slide, .wedding-carousel__clone, .wedding-carousel__slide.is-active, .wedding-carousel__slide.is-adjacent, .wedding-carousel__clone.is-adjacent) { opacity: 1; filter: none; transform: none; box-shadow: var(--shadow-md); transition: none; }
+  .wedding-carousel .gallery-media img { opacity: 1; transform: none; transition: none; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .wedding-carousel__dot, .wedding-carousel__dot.is-active { width: 16px; transition: none; }
+  .wedding-carousel__dot::before, .wedding-carousel__dot.is-active::before { width: 8px; transform: translate(-50%, -50%) scaleX(1); transition: background-color 220ms ease; }
+  .wedding-carousel__dot.is-active::before { background: var(--color-accent-dark); transform: translate(-50%, -50%) scaleX(1.5); }
   .wedding-carousel__arrow { display: none; }
   .wedding-carousel__controls { gap: var(--space-2); margin-top: var(--space-4); padding-inline: var(--space-3); }
   .wedding-carousel__media { touch-action: pan-y pinch-zoom; }
