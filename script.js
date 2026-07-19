@@ -58,6 +58,36 @@ const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
 const seatLookupUnavailable = document.querySelector('#seat-lookup-unavailable');
 const seatingDescription = document.querySelector('#seating-description');
 const seatLookupOpenContent = [...document.querySelectorAll('[data-seat-lookup-open]')];
+const infoTabs = document.querySelector('#info-tabs');
+const infoTabList = infoTabs?.querySelector('.info-tabs__list');
+const infoTabButtons = infoTabs ? [...infoTabs.querySelectorAll('[data-info-tab]')] : [];
+const infoTabPanels = infoTabs ? [...infoTabs.querySelectorAll('[data-info-panel]')] : [];
+const INFO_TABS_BY_MODE = {
+  full: ['ceremony', 'banquet', 'gallery'],
+  wedding: ['ceremony', 'gallery'],
+  online: ['ceremony', 'gallery']
+};
+const INFO_TAB_HASH = {
+  ceremony: '#ceremony',
+  banquet: '#banquet',
+  gallery: '#gallery'
+};
+const INFO_TAB_SECTION_MAP = new Map([
+  ['ceremony', 'ceremony'],
+  ['ceremony-info', 'ceremony'],
+  ['ceremony-parking', 'ceremony'],
+  ['ceremony-notes', 'ceremony'],
+  ['banquet', 'banquet'],
+  ['wedding-info', 'banquet'],
+  ['venue', 'banquet'],
+  ['parking', 'banquet'],
+  ['seating', 'banquet'],
+  ['gallery', 'gallery'],
+  ['share', 'gallery']
+]);
+const infoPanelAnimationHandlers = new WeakMap();
+let activeInfoTab = 'ceremony';
+let infoTabsInitialized = false;
 
 function isLocalDevelopmentHost() {
   return ['localhost', '127.0.0.1', '::1', '[::1]'].includes(window.location.hostname);
@@ -691,6 +721,190 @@ rsvpEdit.addEventListener('click', () => {
   rsvpName.focus({ preventScroll: true });
 });
 
+function infoTabFromHash(hash = window.location.hash) {
+  return INFO_TAB_SECTION_MAP.get(hash.replace(/^#/, '')) || null;
+}
+
+function availableInfoTabs() {
+  return INFO_TABS_BY_MODE[inviteMode] || [];
+}
+
+function renderInfoTabsLanguage() {
+  if (!infoTabs) return;
+  infoTabList.setAttribute('aria-label', t('infoTabs.label'));
+  infoTabButtons.forEach((button) => {
+    const tabId = button.dataset.infoTab;
+    const key = tabId === 'ceremony' && inviteMode === 'online'
+      ? 'infoTabs.onlineCeremony'
+      : `infoTabs.${tabId}`;
+    const label = t(key);
+    button.textContent = label;
+    button.setAttribute('aria-label', label);
+  });
+}
+
+function finishInfoPanelAnimation(panel) {
+  const existingHandler = infoPanelAnimationHandlers.get(panel);
+  if (existingHandler) panel.removeEventListener('animationend', existingHandler);
+  infoPanelAnimationHandlers.delete(panel);
+  panel.classList.remove('is-entering');
+}
+
+function animateInfoPanel(panel) {
+  finishInfoPanelAnimation(panel);
+  if (reducedMotionQuery.matches) return;
+  const handleAnimationEnd = (event) => {
+    if (event.target !== panel) return;
+    finishInfoPanelAnimation(panel);
+  };
+  infoPanelAnimationHandlers.set(panel, handleAnimationEnd);
+  panel.classList.add('is-entering');
+  panel.addEventListener('animationend', handleAnimationEnd);
+}
+
+function revealInfoPanelContent(panel) {
+  panel.querySelectorAll('.reveal').forEach((element) => {
+    element.classList.add('is-visible');
+    element.dataset.revealed = 'true';
+  });
+}
+
+function syncInfoTabNavigationState(tabId) {
+  const currentHash = window.location.hash;
+  const currentHashTab = infoTabFromHash(currentHash);
+  const preferredHref = currentHashTab === tabId ? currentHash : '';
+  const defaultHref = tabId === 'ceremony'
+    ? '#ceremony-info'
+    : (tabId === 'banquet' ? '#wedding-info' : '#gallery');
+  const matchingLink = navSectionLinks?.find((link) => link.getAttribute('href') === preferredHref)
+    || navSectionLinks?.find((link) => link.getAttribute('href') === defaultHref);
+  if (matchingLink && !matchingLink.hidden) setActiveNavLink(matchingLink);
+}
+
+function activateInfoTab(tabId, {
+  updateHistory = true,
+  animate = true,
+  focus = false,
+  maintainPosition = true
+} = {}) {
+  if (!infoTabs || !availableInfoTabs().includes(tabId)) return false;
+  const lightboxElement = document.querySelector('#gallery-lightbox');
+  if (lightboxElement && !lightboxElement.hidden && tabId !== activeInfoTab) return false;
+
+  const targetButton = infoTabButtons.find((button) => button.dataset.infoTab === tabId);
+  const targetPanel = infoTabPanels.find((panel) => panel.dataset.infoPanel === tabId);
+  if (!targetButton || !targetPanel) return false;
+
+  const changingPanel = activeInfoTab !== tabId || targetPanel.hidden;
+  const navigationTop = infoTabList.getBoundingClientRect().top;
+
+  infoTabButtons.forEach((button) => {
+    const selected = button === targetButton;
+    button.classList.toggle('is-active', selected);
+    button.setAttribute('aria-selected', String(selected));
+    button.tabIndex = selected ? 0 : -1;
+  });
+
+  infoTabPanels.forEach((panel) => {
+    const selected = panel === targetPanel;
+    if (!selected) finishInfoPanelAnimation(panel);
+    panel.hidden = !selected;
+  });
+
+  activeInfoTab = tabId;
+  revealInfoPanelContent(targetPanel);
+  if (changingPanel && animate) animateInfoPanel(targetPanel);
+  if (focus) targetButton.focus({ preventScroll: true });
+
+  if (updateHistory) {
+    const url = new URL(window.location.href);
+    url.hash = INFO_TAB_HASH[tabId];
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  if (tabId === 'gallery') {
+    window.requestAnimationFrame(() => {
+      updateCarouselMetrics();
+      scheduleCarouselAutoplay();
+    });
+  } else {
+    window.clearTimeout(carouselAutoplayTimer);
+    carouselAutoplayTimer = null;
+  }
+
+  initializeScrollSpy();
+  syncInfoTabNavigationState(tabId);
+  requestScrollUpdate();
+
+  if (maintainPosition && navigationTop < header.offsetHeight) {
+    infoTabs.querySelector('.info-tabs__navigation').scrollIntoView({
+      behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
+      block: 'start'
+    });
+  }
+  return true;
+}
+
+function initializeInfoTabs() {
+  if (!infoTabs || infoTabsInitialized || !VALID_INVITE_MODES.includes(inviteMode)) return;
+  infoTabsInitialized = true;
+  const allowedTabs = availableInfoTabs();
+  infoTabButtons.forEach((button) => { button.hidden = !allowedTabs.includes(button.dataset.infoTab); });
+  infoTabList.style.setProperty('--info-tab-count', String(allowedTabs.length));
+  renderInfoTabsLanguage();
+
+  const hashTab = infoTabFromHash();
+  const initialTab = hashTab && allowedTabs.includes(hashTab) ? hashTab : 'ceremony';
+  activateInfoTab(initialTab, { updateHistory: false, animate: false, maintainPosition: false });
+
+  if (hashTab && !allowedTabs.includes(hashTab)) {
+    const url = new URL(window.location.href);
+    url.hash = INFO_TAB_HASH.ceremony;
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  } else if (hashTab) {
+    window.requestAnimationFrame(() => {
+      const hashTarget = document.querySelector(window.location.hash);
+      (hashTarget || infoTabs.querySelector('.info-tabs__navigation')).scrollIntoView({
+        behavior: 'auto',
+        block: 'start'
+      });
+    });
+  }
+}
+
+infoTabButtons.forEach((button) => {
+  button.addEventListener('click', () => activateInfoTab(button.dataset.infoTab));
+  button.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const enabledButtons = infoTabButtons.filter((candidate) => !candidate.hidden);
+    const currentIndex = enabledButtons.indexOf(button);
+    const targetIndex = event.key === 'Home'
+      ? 0
+      : (event.key === 'End'
+        ? enabledButtons.length - 1
+        : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + enabledButtons.length) % enabledButtons.length);
+    activateInfoTab(enabledButtons[targetIndex].dataset.infoTab, { focus: true });
+  });
+});
+
+document.addEventListener('click', (event) => {
+  const anchor = event.target.closest('a[href^="#"]');
+  if (!anchor) return;
+  const targetTab = infoTabFromHash(anchor.getAttribute('href'));
+  if (targetTab) activateInfoTab(targetTab, { updateHistory: false, maintainPosition: false });
+}, true);
+
+window.addEventListener('hashchange', () => {
+  if (!infoTabsInitialized) return;
+  const targetTab = infoTabFromHash();
+  if (!targetTab) return;
+  activateInfoTab(targetTab, { updateHistory: false, maintainPosition: false });
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => syncInfoTabNavigationState(targetTab));
+  });
+});
+
 function setMenu(open) {
   menuButton.setAttribute('aria-expanded', String(open));
   menuButton.setAttribute('aria-label', open ? t('nav.closeMenu') : t('nav.openMenu'));
@@ -1106,11 +1320,13 @@ const carouselNext = weddingCarousel?.querySelector('.wedding-carousel__arrow--n
 const carouselDots = weddingCarousel?.querySelector('.wedding-carousel__dots');
 const carouselReturn = weddingCarousel?.querySelector('.wedding-carousel__return');
 const carouselMobileQuery = window.matchMedia('(max-width: 820px)');
+const gallerySection = weddingCarousel?.closest('#gallery');
 const carouselIsEnabled = Boolean(
   weddingCarousel
   && carouselSlides.length
   && VALID_INVITE_MODES.includes(inviteMode)
-  && !weddingCarousel.closest('[hidden]')
+  && gallerySection
+  && !gallerySection.hidden
 );
 if (weddingCarousel) {
   weddingCarousel.dataset.revealed = 'true';
@@ -1836,6 +2052,8 @@ if (carouselIsEnabled) {
   window.requestAnimationFrame(() => positionCarousel(0, false));
 }
 
+initializeInfoTabs();
+
 function initializeViewportAnimations() {
   const animationTargets = [hero, ...document.querySelectorAll('.image-shell, .gallery-media')]
     .filter((element) => element && !element.closest('[hidden]') && element.getClientRects().length > 0);
@@ -2316,6 +2534,7 @@ document.addEventListener('keydown', (event) => {
 
 function syncDynamicLanguage() {
   renderInviteModeLanguage();
+  renderInfoTabsLanguage();
   updateWeddingCountdown();
   document.querySelectorAll('[data-rsvp-deadline]').forEach((element) => {
     element.textContent = t('seating.deadline');

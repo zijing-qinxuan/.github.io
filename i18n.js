@@ -9,6 +9,10 @@ const translations = {
       languageGroup: '選擇語言', chooseChinese: '切換為繁體中文', chooseEnglish: 'Switch to English'
     },
     accessibility: { backToTop: '回到頁面頂端', readingProgress: '頁面閱讀進度' },
+    infoTabs: {
+      label: '婚禮資訊分類', ceremony: '婚禮資訊', onlineCeremony: '線上婚禮',
+      banquet: '婚宴資訊', gallery: '婚紗與分享'
+    },
     hero: {
       weddingSchedule: '婚禮｜14:00', banquetSchedule: '婚宴｜18:00',
       ceremonyEntry: '開放入場', onlineEntry: '線上開放進入', scheduleLabel: '邀請行程'
@@ -60,6 +64,10 @@ const translations = {
       languageGroup: 'Choose language', chooseChinese: 'Switch to Traditional Chinese', chooseEnglish: 'Switch to English'
     },
     accessibility: { backToTop: 'Back to top', readingProgress: 'Page reading progress' },
+    infoTabs: {
+      label: 'Wedding information categories', ceremony: 'Ceremony', onlineCeremony: 'Online Ceremony',
+      banquet: 'Banquet', gallery: 'Gallery & Sharing'
+    },
     hero: {
       weddingSchedule: 'Wedding Ceremony | 2:00 PM', banquetSchedule: 'Wedding Banquet | 6:00 PM',
       ceremonyEntry: 'Admission Opens', onlineEntry: 'Online Room Opens', scheduleLabel: 'Invitation schedule'

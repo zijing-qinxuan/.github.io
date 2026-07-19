@@ -289,6 +289,19 @@
       </div>
     </section>
 
+    <div class="info-tabs" id="info-tabs">
+      <div class="info-tabs__navigation">
+        <div class="shell">
+          <div class="info-tabs__list" role="tablist" aria-label="婚禮資訊分類">
+            <button class="info-tabs__tab is-active" id="tab-ceremony" type="button" role="tab" aria-controls="panel-ceremony" aria-selected="true" tabindex="0" data-info-tab="ceremony">婚禮資訊</button>
+            <button class="info-tabs__tab" id="tab-banquet" type="button" role="tab" aria-controls="panel-banquet" aria-selected="false" tabindex="-1" data-info-tab="banquet">婚宴資訊</button>
+            <button class="info-tabs__tab" id="tab-gallery" type="button" role="tab" aria-controls="panel-gallery" aria-selected="false" tabindex="-1" data-info-tab="gallery">婚紗與分享</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-tabs__panel" id="panel-ceremony" role="tabpanel" aria-labelledby="tab-ceremony" data-info-panel="ceremony">
+
     <section class="page-section ceremony-section" id="ceremony-info" aria-labelledby="ceremony-info-title" data-invite="section:ceremony-info">
       <div class="shell wedding-info-wrap">
         <header class="section-title section-header reveal">
@@ -426,6 +439,10 @@
         </div>
       </div>
     </section>
+
+      </div>
+
+      <div class="info-tabs__panel" id="panel-banquet" role="tabpanel" aria-labelledby="tab-banquet" data-info-panel="banquet" hidden>
 
     <section class="page-section" id="wedding-info" aria-labelledby="wedding-info-title" data-invite="section:wedding-info">
       <div class="shell wedding-info-wrap">
@@ -584,6 +601,10 @@
       </div>
     </section>
 
+      </div>
+
+      <div class="info-tabs__panel" id="panel-gallery" role="tabpanel" aria-labelledby="tab-gallery" data-info-panel="gallery" hidden>
+
     <section class="story-gallery" id="gallery" aria-labelledby="gallery-title" data-invite="section:gallery">
       <header class="section-title section-header story-title shell reveal">
         <p class="section-header__eyebrow">05 · GALLERY</p>
@@ -699,6 +720,9 @@
         </article>
       </div>
     </section>
+
+      </div>
+    </div>
 
     <section class="page-section faq-section" id="faq" aria-labelledby="faq-title" data-invite="section:faq">
       <div class="shell faq-shell">
